@@ -1,0 +1,48 @@
+﻿.login_titles p 
+	{
+	font-size: 7pt;
+	}
+	
+.login_controls 
+	{
+	font-size: 7pt;
+	}
+
+.accounts_titles 
+	{
+	font-size: 7pt;
+	}
+	
+.accounts_controls 
+	{
+	font-size: 7pt;
+	}
+
+
+.ecomLoginTable
+{
+	width:400px;
+}
+
+.ecomTextBoxes
+{
+}
+
+.tableRule
+{
+	width:95%;
+	color:#cccccc;
+}
+
+
+
+.nonValid { color: #CC3300; font-weight: bold; font-style:italic; font-size: 10pt;}
+
+.grvHead {text-align:center; background-color:#C6C291; color:#723D11; height:16px; font-weight:bold;}
+.grvDetailHead {background-color:#C6C291; color:#5F2F08; height:16px; font-weight:bold; }
+.grvAlternating { background-color: #F7F5EE; }
+.grvSelected { background-color: #E5E3C8; color:#5F2F08;}
+.grvFieldHead {background-color: #ECEAD0; border-bottom: solid 1px #D2CE9F; font-size:8pt;}
+.grvCmd { background-color:#C6C291;}
+
+

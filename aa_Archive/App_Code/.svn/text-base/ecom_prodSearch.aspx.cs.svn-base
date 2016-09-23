@@ -1,0 +1,4162 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+using System.Data.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Text;
+using System.Diagnostics;
+using System.Data.SqlClient;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Data;
+using System.Configuration;
+using System.Data.OleDb;
+using System.Data.Odbc;
+using System.ServiceModel;
+using System.Data.OracleClient;
+using System.IO;
+using System.Net.Mail;
+
+
+
+
+public partial class ecom_prodSearch : System.Web.UI.Page
+{
+
+    int x;
+    bool blnshowDebuggerOutput;
+    int intPlacedPartNumberCounter;
+    string MySessionId;
+    bool blnShowPanelDeubggerString;
+    public string strFileRootPath;
+    bool blnGlobalLoaded;
+    DataTable dtGlobalAdmin;
+
+    // ******************************** from global admin
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        blnshowDebuggerOutput = false;
+        MySessionId = Session.SessionID;
+        string thisPathTranslated = Request.ServerVariables["PATH_TRANSLATED"].ToLower();
+
+
+        Boolean blnOnDevServer = false;
+        if (thisPathTranslated.Substring(0,15) == "c:\\inet\\htmled\\")
+        {
+            blnOnDevServer = true;
+        }
+   
+        strFileRootPath =  "E:\\web\\jetpartseng\\htdocs";
+
+        if (!blnGlobalLoaded)
+        {
+            loadGlobalAdmin();
+            blnGlobalLoaded = true;
+            lblModalHelp.Text = buildHelpPanel("modalHelp");
+    
+
+        }
+
+        if (blnOnDevServer)
+        {
+            strFileRootPath = "c:\\Documents and Settings\\user\\My Documents\\Visual Studio 2008\\Websites\\JetParts";
+            
+        }
+
+        //SetQuantumTypeDDL(string.Empty);
+        SetshippingCarrierDDL(string.Empty);
+        //--SetMyShipperidDDL(string.Empty);
+        //-----SetMyShipToAddressDDL(string.Empty);
+        SetMyCardTypeDDL(string.Empty);
+        blnShowPanelDeubggerString = true;
+
+        
+        int intMatchAccountKey;
+        if (Page.Session["pkAccountKey"] != null)
+        {
+            intMatchAccountKey = (int)Page.Session["pkAccountKey"];
+            if (intMatchAccountKey < 1)
+            {
+
+            }
+        }
+        else
+        {
+            Page.Session["pkAccountType"] = string.Empty;
+
+        }
+
+        if (Page.Session["LoggedInUserID"] == null)
+        {
+            Page.Session["LoggedInUserID"] = -1;
+        }
+
+
+        if ((int)Page.Session["LoggedInUserID"] == -1)
+        {
+            
+            SetPanels("login");
+        }
+
+        if (IsPostBack)
+        {
+
+            switch (Request.Form["cmd"])
+            {
+                case "LostPassword":
+                    {
+                        break;
+
+                    }
+            }
+
+        
+        }
+
+
+
+
+        if (blnshowDebuggerOutput)
+            showForm();
+
+        //---------iterate and show the controls
+        bool blnShowControlsLabel = false;
+        lblControlList.Text = string.Empty;
+        if (blnShowControlsLabel)
+        {
+            lblControlList.Text += "<ul>";
+            IterateThroughChildren(this);
+            lblControlList.Text += "</ul>";
+
+        }
+
+        //-- insert the client side javascript calling the throbber
+        
+        //btnPartsSearch.Attributes.Add("onclick", "javascript: return qtyOnBlur('btnShowThrobber', 'btnPartsSearch');");
+
+        btnPartsSearch.Attributes.Add("onclick", "javascript: return showThrobber('btnShowThrobber', 'btnPartsSearch');");
+
+
+        btnUpdateSmartBuyer1.Attributes.Add("onclick", "javascript: return qtyUpdate('btnShowThrobber', 'btnUpdateSmartBuyer1');");
+
+        txtLoginUserName.Attributes.Add("onkeyup", "javascript: return focusOnEnter(event, 'txtLoginPassword');");
+       
+        txtLoginUserName.Attributes.Add("onkeypress", "javascript: return capLock(event);");
+
+        txtLoginPassword.Attributes.Add("onkeyup", "javascript: return submitOnEnter(event, 'btnLogin');");
+
+        txtLoginPassword.Attributes.Add("onkeypress", "javascript: return capLock(event);");
+
+        txtForgotEmail.Attributes.Add("onkeyup", "javascript: return focusOnEnter(event, 'txtForgotUserName');");
+        txtForgotEmail.Attributes.Add("onkeyup", "javascript: return submitOnEnter(event, 'btnRecoverPassword');");
+
+        //ibEditMyAccount.Attributes.Add("onclick", "javascript: return doButtonClick('btnEditAccount');");
+        btnRecoverPassword.Attributes.Add("onclick", "javascript: return ReplaceThrobber('behaveThrobber', 'btnRecoverPassword', 'behaveForgotten');");
+        
+    }
+
+
+    void loadGlobalAdmin()
+    {
+
+
+        dtGlobalAdmin = null;
+
+        DataSet dsGlobal = new DataSet();
+        string conn = string.Empty;
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection sqlConn = new SqlConnection(conn);
+        string queryString = "SELECT * from ecom_GlobalAdmin WHERE pkID = 1;";
+      
+
+
+        SqlCommand selectCMD = new SqlCommand(queryString, sqlConn);
+        selectCMD.CommandTimeout = 30;
+
+        SqlDataAdapter globalDA = new SqlDataAdapter();
+        globalDA.SelectCommand = selectCMD;
+
+        try
+        {
+            sqlConn.Open();
+            globalDA.Fill(dsGlobal, "Global");
+            dtGlobalAdmin = dsGlobal.Tables["Global"];
+            
+
+        }
+
+        catch (Exception ex)
+        {
+            sqlConn.Close();
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            sqlConn.Close();
+        }
+
+        
+
+
+    }
+
+
+
+
+    void IterateThroughChildren(Control parent)
+    {
+        foreach (Control c in parent.Controls)
+        {
+            lblControlList.Text += "<li>" + c.ToString() + "</li>";
+            if (c.Controls.Count > 0)
+            {
+                lblControlList.Text += "<ul>";
+                IterateThroughChildren(c);
+                lblControlList.Text += "</ul>";
+            }
+        }
+    }
+
+    public void showForm()
+    {
+        foreach (string name in Request.Form)
+        {
+            Debug.WriteLine(name + " = " + Request.Form[name]);
+        }
+    }
+
+    
+
+    protected int PartNumberOnScreen(string thisPartNumber, string thisPartNumberStripped, string thisPrice, string thisQty, string thisPanelType, string[,] strPlacedPartNumbers)
+    {
+        int intAlreadyPlacedElement = -1;
+        int lp;
+
+        if ((thisPanelType == "NHA") && (int.Parse(thisQty) > 0))
+        {
+            return -2;
+        }
+
+        for (lp = 0; lp <= intPlacedPartNumberCounter; lp++)
+        {
+            if (thisPartNumber == strPlacedPartNumbers[lp, 0] || ((thisPartNumberStripped == strPlacedPartNumbers[lp, 1] && thisPartNumberStripped != string.Empty)))
+            {
+                intAlreadyPlacedElement = lp;
+            }
+        }
+      
+
+        if (intAlreadyPlacedElement ==-1)
+        {
+
+            strPlacedPartNumbers[++intPlacedPartNumberCounter, 0] = thisPartNumber;
+            strPlacedPartNumbers[intPlacedPartNumberCounter, 1] = thisPartNumberStripped;
+            strPlacedPartNumbers[intPlacedPartNumberCounter, 2] = thisPrice;
+            strPlacedPartNumbers[intPlacedPartNumberCounter, 3] = thisQty;
+            strPlacedPartNumbers[intPlacedPartNumberCounter, 3] = thisPanelType;
+        }
+
+         //string[,] strPlacedPartNumbers = new string[500, 10];
+         //-- 0 part number
+         //-- 1 stripped part number
+         //-- 2 price
+         //-- 3 qty
+         //-- 4 panel type
+
+        return intAlreadyPlacedElement;
+
+    }
+
+
+    protected void logSearchWordUsed(string strSearchWord, string strUsedIn, int swCounter, string[,] searchWords)
+    {
+        int lp;
+        string lclSearchWord = GenUtils.MakeUCaseNumChar(strSearchWord);
+        string strThisSearchItem = string.Empty;
+
+        for (lp = 0; lp <= swCounter; lp++)
+        {
+
+            strThisSearchItem = GenUtils.MakeUCaseNumChar(searchWords[lp, 0]);
+
+            if (strThisSearchItem == lclSearchWord)
+            {
+                searchWords[lp, 3] = strUsedIn;
+                break;
+            }
+        }
+
+    }
+
+
+    protected string OpenPod(string strTitle, string strMatch)
+    {
+        string tmp = string.Empty;
+        string lclTitle = strTitle;
+
+        tmp = "<div class='box'><b class='tc'><b class='L1'></b><b class='L2'></b><b class='L3'></b></b><div class='content'>";
+        tmp += "<table>";
+        if (strTitle != string.Empty)
+        {
+            if (strTitle == "multi")
+            {
+                lclTitle = "Multiple Matches for your search: ";
+
+            }
+            else if (strTitle == "nomatch")
+            {
+                lclTitle = "No Matches Found";
+            }
+            tmp += "<tr><td class='SBpodTitleBar'>" + lclTitle + "<span class='SBpodSearchWord'>" + strMatch + "</span></td></tr>";
+        }
+
+        //tmp += "<tr><td>";
+        return tmp;
+
+    }
+
+    protected string closePod()
+    {
+        string tmp = string.Empty;
+        tmp += "</table>";
+        tmp += "</div><b class='bc'><b class='L3'></b><b class='L2'></b><b class='L1'></b></b></div>";
+        return tmp;
+
+    }
+
+
+    protected string BuildFullMatchPanel(string strPartNumber, string strReplaces, string strDescription, decimal decCost, int intQtyOrdered, decimal decExtend, int intAvl, int intBO, string strImageName, string strLinkID, string strDebug)
+    {
+        string tmp = string.Empty;
+
+        tmp += "<tr><td><table class='SBSingleMatchTable' style='width:535px;margin-left:3px;margin-right:3px;'>";
+
+        tmp += "<tr><td class='SBpartImageTD' rowspan='2'>";
+        tmp += "<a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + " onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">";
+
+
+        tmp += "<img src='" + strImageName + "' width='75' alt='Click to view detailed information about this Part' onmouseover=" + (char)34 + "this.className='SBshowBorder';" + (char)34 + " onmouseout=" + (char)34 + "this.className='SBnoBorderSingleMatch';" + (char)34 + " class='SBnoBorderSingleMatch' /></a>";
+
+
+        tmp += "</td><!-- top row table --><td class='partTopLine1'>";
+        tmp += "<table>";
+        tmp += "<tr><td class='SBpartNumberTD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + " onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">" + strPartNumber + "</a></td>";
+        tmp += "<td class='SBreplacesTD'><span class='SBreplacesLabel'>Replaces: </span>" + strReplaces + "</td></tr>";
+        tmp += "<tr><td class='SBdescriptionTD' colspan='2'>" + strDescription + strDebug + "</td></tr>";
+        tmp += "</table>";
+
+        tmp += "</td>";
+        tmp += "<td class='SBmoreInfoTD' rowspan='2'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + "><img src='images/moreinfo.png' alt='Click to view detailed information about this Part'  border='0' /><br />Click for Details</a></td>";
+        tmp += "</tr><!-- end of top row table -->";
+
+        tmp += "<td>";
+
+        tmp += "<table border='1' bordercolor='#cccccc' cellpadding='0' cellspacing='0'>";
+        tmp += "<tr><td class='SBcostLabelTD'>Cost</td><td class='SBqtyLabelTD'>Qty Ordered</td><td class='SBextendLabelTD'>Extend</td><td class='SBavailLabelTD'>Avail</td><td class='SBboLabelTD'>B/0</td></tr>";
+        tmp += "<tr><td class='SBcostTD'>" + String.Format("{0:C}", decCost) + "</td><td class='SBqtyTD'><input type='text' name='txtQTY_Search-SingleMatch_" + strLinkID + "' class='SBtxtQtyCntrl' id='txtQTY_Search-SingleMatch_" + strLinkID + "' maxlength='5' onkeypress='return checkIt(event)' Onblur=" + (char)34 + "javascript: return qtyOnBlurIf('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_Search-SingleMatch_" + strLinkID + "');" + (char)34 + " value='" + intQtyOrdered + "'>";
+
+        tmp += "<input type='hidden'ID='hidden_txtQTY_Search-SingleMatch_" + strLinkID + "' name='hidden_txtQTY_Search-SingleMatch_" + strLinkID + "' value = '" + intQtyOrdered  + "'>";
+
+        tmp += "</td><td class='SBextendTD'>" + String.Format("{0:C}", decExtend) + "</td><td class='SBavailTD'>" + intAvl + "</td><td class='SBboTD'>" + intBO + "</td></tr></table>";
+        tmp += "</td></tr></table></td></tr>";
+        return tmp;
+    }
+
+
+
+
+    protected string BuildFullMatchNonApproved(string strPartNumber, string strReplaces, string strDescription, int intQtyOrdered, string strImageName, string strLinkID, string strDebug)
+    {
+        string tmp = string.Empty;
+        string strQtyOrdered = string.Empty;
+
+        tmp = "<tr><td>";
+        tmp += "<table class='SBSingleMatchTable' style='width:535px;margin-left:3px;margin-right:3px;'>";
+        tmp += "<tr><td class='SBpartImageTD' rowspan='2'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + "><img src='products/thumbnails/" + strImageName + "' width='75' alt='Click to view detailed information about this Part' onmouseover=" + (char)34 + "this.className='SBshowBorder';" + (char)34 + "  onmouseout=" + (char)34 + "this.className='SBnoBorderSingleMatch';" + (char)34 + " class='SBnoBorderSingleMatch' /></a></td>";
+        tmp += "<!-- top row table --><td class='partTopLine1'>";
+        tmp += "<table><tr><td class='SBpartNumberTD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">" + strPartNumber + "</a></td><td class='SBreplacesTD'><span class='SBreplacesLabel'>Replaces: </span>" + strReplaces + "</td></tr>";
+        tmp += "<tr><td class='SBdescriptionTD' colspan='2'>" + strDescription + strDebug + "</td>";
+        tmp += "<td class='SBNonApprQtyTD'><input type='text' name='txtQTY_Search-NonApproved_" + strLinkID + "' class='SBtxtQtyCntrl' id='txtQTY_Search-NonApproved_" + strLinkID + "' maxlength='5' onkeypress='return checkIt(event)'   OnblurIf =" + (char)34 + "javascript: return qtyOnBlur('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_Search-NonApproved_" + strLinkID + "');" + (char)34 + " ";
+        
+        
+        if (intQtyOrdered > 0)
+        {
+            strQtyOrdered = intQtyOrdered.ToString(); 
+        }
+
+        tmp += "  value='" + strQtyOrdered + "'>";
+
+        tmp += "<input type='hidden'ID='hidden_txtQTY_Search-NonApproved_" + strLinkID + "' name='hidden_txtQTY_Search-NonApproved_" + strLinkID + "' value = '" + strQtyOrdered + "'>";
+
+
+
+        
+        tmp += "<br />Qty</td></tr></table></td><td class='SBmoreInfoTD' rowspan='2'><a href='#' target='_self'>Click for Details</a></td></tr><!-- end of top row table --></table>";
+
+        return tmp;
+    }
+
+
+    protected string addLabelBar(string strLabel)
+    {
+        string tmp = string.Empty;
+        tmp += "<tr><td class = 'SBpodTitleBar'>" + strLabel + "</td></tr>";
+        return tmp;
+    }
+
+
+    protected string BuildOEMPanel(string strPartNumber, string strDescription, int intQtyOrdered, decimal decCost, int intAvl, string strLinkID, string strDebug)
+    {
+        string tmp = string.Empty;
+        string strQtyOrdered = string.Empty;
+
+        tmp += " <tr><td>  <table class='SBOEMMatchTable' style='width:535px;margin-left:3px;	margin-right:3px;'>";
+        tmp += "<tr><!-- top row table --><td class='partTopLine1'>";
+        tmp += "<table><tr><td class='SBpartNumberOEMTD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut999';" + (char)34 + ">" + strPartNumber + "</a></td><td class='SBdescriptionOEMTD'>" + strDescription + strDebug + "</td>";
+
+        tmp += "<td><table><tr><td class='SBcostLabelTD'>Cost</td><td class='SBqtyLabelTD'>Qty</td><td class='SBboLabelTD'>&nbsp;</td><td class='SBavailLabelTD'>Avail</td></tr>";
+        tmp += "<tr><td class='SBcostTD'>" + String.Format("{0:C}", decCost) + "</td><td class='SBqtyTD'><input type='text' name='txtQTY_Search-OEM_" + strLinkID + "' class='SBtxtQtyCntrl' id='txtQTY_Search-OEM_" + strLinkID + "' maxlength='5' onkeypress='return checkIt(event)'  Onblur=" + (char)34 + "javascript: return qtyOnBlurIf('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_Search-OEM_" + strLinkID + "');" + (char)34 + " ";
+
+
+        if (intQtyOrdered > 0)
+        {
+            strQtyOrdered = intQtyOrdered.ToString();
+        }
+
+        tmp += "  value='" + strQtyOrdered + "'>";
+
+        tmp += "<input type='hidden'ID='hidden_txtQTY_Search-OEM_" + strLinkID + "' name='hidden_txtQTY_Search-OEM_" + strLinkID + "' value = '" + strQtyOrdered + "'>";
+
+        
+      
+
+
+
+        tmp += "</td><td class='SBboTD'>&nbsp;</td><td class='SBavailTD'>" + intAvl + "</td></tr></table></td></tr></table>";
+        tmp += "</td><td class='SBmoreInfoTD' rowspan='2'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Click for Details</a></td></tr></table>";
+
+        tmp += "</td></tr>";
+
+        return tmp;
+    }
+
+    protected string openNHATable()
+    {
+        string tmp = string.Empty;
+        tmp += "<tr><td><table class='SBNHAMatchTable' style='width:535px;margin-left:3px;	margin-right:3px;margin-top:1px;'>";
+        return tmp;
+    }
+    protected string closeNHATable()
+    {
+        string tmp = string.Empty;
+
+        tmp += "</table></td></tr>";
+        return tmp;
+    }
+
+
+    protected string BuildAssociatedLineItem(string strPartNumber, string strDescription, decimal decCost, int intQtyOrdered, string strLinkID, string strDebug)
+    {
+        string tmp = string.Empty;
+        string strQtyOrdered = string.Empty;
+
+        tmp += "<tr><td class='SBpartNumberNHATD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">" + strPartNumber + "</a></td><td class='SBdescriptionNHATD'>" + strDescription + strDebug + "</td><td class='SBcostTD'>" + String.Format("{0:C}", decCost) + "</td><td class='SBqtyNHATD'><input type='text' name='txtQTY_Search-NHA_" + strLinkID + "' class='SBtxtQtyCntrl' id='txtQTY_Search-NHA_" + strLinkID + "' maxlength='5' onkeypress='return checkIt(event)'  Onblur=" + (char)34 + "javascript: return qtyOnBlurIf('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_Search-NHA_" + strLinkID + "');" + (char)34 + " ";
+
+
+        if (intQtyOrdered > 0)
+        {
+            strQtyOrdered = intQtyOrdered.ToString();
+        }
+
+        tmp += "  value='" + strQtyOrdered + "'>";
+
+        tmp += "<input type='hidden'ID='hidden_txtQTY_Search-NHA_" + strLinkID + "' name='hidden_txtQTY_Search-NHA_" + strLinkID + "' value = '" + strQtyOrdered + "'>";
+
+        
+        
+        
+        
+        tmp += "</td><td class='SBmoreInfoNHATD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Click for Details</a></td></tr>";
+
+
+        return tmp;
+    }
+
+
+    protected string BuildNHAShowMore(string strNHAAssembly)
+    {
+        string tmp = string.Empty;
+        tmp += "<tr><td class='SBpartNumberNHATD' colspan='4'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'NHA|" + strNHAAssembly + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Show all NHA Parts</td>";
+
+        tmp += "<td class='SBmoreInfoNHATD' style='text-align:right; margin:0px auto; padding-right:4px;'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'NHA|" + strNHAAssembly + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + "><img src='images/Open-32.png'  alt='Click to view all NHA Parts' onmouseover=" + (char)34 + "this.className='SBshowBorder';" + (char)34 + "  onmouseout=" + (char)34 + "this.className='SBnoBorderSingleMatch';" + (char)34 + " class='SBnoBorderSingleMatch' /></a></td></tr>";
+
+
+        return tmp;
+
+    }
+
+
+    protected string BuildMultiMatchPanel(string strPartNumber, string strDescription, decimal decCost, int intQtyOrdered, string strImageName, string strLinkID, string strDebug)
+    {
+        string tmp = string.Empty;
+        string strQtyOrdered = string.Empty;
+
+
+        tmp += "<tr><td>";
+        tmp += "<table class='SBMultipleMatchTable' style='width:535px;margin-left:3px;	margin-right:3px;margin-top:5px;'>";
+        tmp += "<tr><!-- top row table --><td class='partTopLine1'>";
+        tmp += "<table><tr><td class='SBmoreInfoTD' rowspan='2'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + "><img src='" + strImageName + "' alt='Click to view detailed information about this Part'  width='50'  onmouseover=" + (char)34 + "this.className='SBshowBorder';" + (char)34 + " onmouseout=" + (char)34 + "this.className='SBnoBorderMulti';" + (char)34 + " class='SBnoBorderMulti' /></a></td>";
+
+        tmp += "<td class='SBpartNumberMultiMatchTD'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">" + strPartNumber + "</a></td><td class='SBdescriptionMultiMatchTD'>" + strDescription + strDebug + "</td><td>";
+        tmp += "<table><tr><td class='SBcostLabelTD'>Cost</td><td class='SBqtyLabelTD'>Qty</td>";
+        tmp += "</tr><tr><td class='SBcostTD'>" + String.Format("{0:C}", decCost) + "</td><td class='SBqtyTD'><input type='text' name='txtQTY_Search-MultiMatch_" + strLinkID + "' class='SBtxtQtyCntrl' id='txtQTY_Search-MultiMatch_" + strLinkID + "' maxlength='5' onkeypress='return checkIt(event)'  Onblur=" + (char)34 + "javascript: return qtyOnBlurIf('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_Search-MultiMatch_" + strLinkID + "');" + (char)34 + " ";
+
+
+
+        if (intQtyOrdered > 0)
+        {
+            strQtyOrdered = intQtyOrdered.ToString();
+        }
+        tmp += "  value='" + strQtyOrdered + "'>";
+
+
+        tmp += "<input type='hidden'ID='hidden_txtQTY_Search-MultiMatch_" + strLinkID + "' name='hidden_txtQTY_Search-MultiMatch_" + strLinkID + "' value = '" + strQtyOrdered + "'>";
+
+     
+
+
+        tmp += "</td></tr></table></td></tr></table></td>";
+        tmp += "<td class='SBmoreInfoTD' rowspan='2'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Click for Details</a></td></tr>";
+        tmp += "</table></td></tr>";
+
+
+        return tmp;
+    }
+
+    protected string BuildNoMatchPanel(string[] strNoMatches, int intNoMatchCount)
+    {
+        string tmp = string.Empty;
+        bool blnfirstplaced = false;
+
+        for (int lp = 0; lp <= intNoMatchCount; lp++)
+        {
+            if (strNoMatches[lp] != "DUPLICATE")
+            {
+                if (!blnfirstplaced)
+                {
+                    tmp += OpenPod("nomatch", "");
+                    tmp += "<tr><td>";
+                    tmp += "<table class='SBNoMatchTable' style='margin-top:3px;'>";
+                    blnfirstplaced = true;
+                }
+            }
+            tmp += "<tr><td class='SBpartNumberTD'>" + strNoMatches[lp] + "</td><td>Not found in our database</td></tr>";
+        }
+
+        if (blnfirstplaced)
+        {
+            tmp += "</table><!-- end of top row table --></td></tr>";
+            tmp += closePod();
+        }
+        return tmp;
+    }
+
+
+    private string BuildCheckoutCart(string[,] searchWords)
+    {
+        string tmp = string.Empty;
+
+        tmp = "<table class='cartTable'  style='width:560px;'>";
+        tmp += "<tr><td colspan='11' class='cartRowSpacer'></td></tr>";
+        tmp += "<!-- Header Cart Row -->";
+
+        //-------------- header
+        tmp += "<tr>";
+        tmp += "<td class='cartColSpacer'>";
+        tmp += "<td class='cartJPENumberHeader'>JPE Part No.</td>";
+        tmp += "<td class='cartColSpacer'></td>";
+        tmp += "<td class='cartDescriptionHeader'>Description</td>";
+        tmp += "<td class='cartColSpacer'></td>";
+        tmp += "<td class='cartQtyHeader'>Qty</td>";
+        tmp += "<td class='cartColSpacer'></td>";
+        tmp += "<td class='cartBOHeader'>B/O</td>";
+        tmp += "<td class='cartColSpacer'></td>";
+        tmp += "<td class='cartPriceHeader'>Price</td>";
+        tmp += "<td class='cartColSpacer'></td>";
+        tmp += "<td class='cartExtensionHeader'>Extension</td>";
+        tmp += "<td class='cartColSpacer'></td></tr>";   //----- add close td
+
+        tmp += "<tr><td colspan='11' class='cartRowSpacer'></td></tr>";
+
+
+        //--------------------- line item
+
+        string strPartNumber = string.Empty;
+        string strthisQty = string.Empty;
+        int intThisPTRow = -1;
+
+        int lp = 0;
+
+        for (lp = 0; lp <= 1000; lp++)
+        {
+            if (searchWords[lp,0] == null)
+            {
+                break;
+            }
+            else if (searchWords[lp,0] == string.Empty)
+            {
+                break;
+            }
+            else
+            {
+                strthisQty = GenUtils.MakeNumbersOnly(searchWords[lp, 1]);
+
+                if (int.Parse(strthisQty) > 0)
+                {
+                strPartNumber = searchWords[lp,0];
+                intThisPTRow = FindPartsTableRow(strPartNumber);
+                if (intThisPTRow > -1)
+                {
+                    //intIFCKey = int.Parse(myRow["IFC_AUTO_KEY"].ToString());
+                    //intStockCategKey = int.Parse(myRow["P_STC_AUTO_KEY"].ToString());
+                    //Debug.WriteLine(lp + " in cart " + searchWords[lp, 0] + " " + searchWords[lp, 1] + " " + searchWords[lp, 2]);
+                    tmp += "<!-- Cart Row -->";
+                    tmp += "<tr>";
+                    tmp += "<td class='cartColSpacer'></td>";  //  added close td
+                    tmp += "<td class='cartJPENumber'><a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'PN|" + strPartNumber + "|" + MySessionId + "', event)" + (char)34 + "    onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">" + strPartNumber + "</a></td>";
+                    tmp += "<td class='cartColSpacer'></td>";
+                    tmp += "<td class='cartDescription'>" + dtCacheMaster.Rows[intThisPTRow]["DESCRIPTION"] + "</td>";
+                    tmp += "<td class='cartColSpacer'></td>";
+                    tmp += "<td class='cartQty'><input type='text' name='txtQTY_CheckoutCart_" + strPartNumber + " ' class='SBtxtQtyCntrl' id='txtQTY_CheckoutCart_" + strPartNumber + "' maxlength='5' onkeypress='return checkIt(event)'  Onblur=" + (char)34 + "javascript: return qtyOnBlurIf('btnShowThrobber', 'btnUpdateSmartBuyer1', 'txtQTY_CheckoutCart_" + strPartNumber + "');" + (char)34 + " value='" + strthisQty + "'>";
+      
+
+                    tmp += "<input type='hidden'ID='hidden_txtQTY_CheckoutCart_" +  strPartNumber + "' name='hidden_txtQTY_CheckoutCart_" + strPartNumber + "' value = '" + strthisQty + "'>";
+
+       
+                        
+                        
+                    tmp += "</td>";
+                    tmp += "<td class='cartColSpacer'></td>";
+                    tmp += "<td class='cartBO'>0</td>";
+                    tmp += "<td class='cartColSpacer'></td>";
+                    tmp += "<td class='cartPrice'>995.95</td>";
+                    tmp += "<td class='cartColSpacer'></td>";
+                    tmp += "<td class='cartExtension'>4,975.00</td>";
+                    tmp += "<td class='cartColSpacer'></td>"; //---- added the close td
+                    tmp += "</tr>";
+                    tmp += "<tr><td colspan='13' class='cartRowSpacer'></td></tr>";
+                    }
+                }
+            }  
+        }
+
+        tmp += "<tr>";
+        tmp += "<td class='cartNeutral' colspan='4'>";
+
+        tmp += "<input type='button' ID='btnPartsSearchfromCart1'  OnClick=" + (char)34 + "doButtonClick('btnPartsSearchfromCart2');" + (char)34 + " value='Return to Search' />";
+
+        // tmp += "<asp:Button ID='btnPartsSearchfromCart' TabIndex = '3' runat='server' Text='Return to Search Page'  onclick='btnPartsSearchfromCart_Click' />";
+
+        tmp += "</td><td class='cartNeutral' colspan='4'>";
+        
+        //tmp += "<asp:Button ID='btnRecalcCart' TabIndex = '3' runat='server' Text='Recalculate'   /></td>";
+
+        tmp += "<input type='button' ID='btnRecalcCart1'  OnClick=" + (char)34 + "doButtobClick('btnRecalcCart2');" + (char)34 + " value='Recalculate' />";
+
+        tmp += "<td colspan='2' class='cartNeutral'>Total";
+        tmp += "<td class='cartColSpacer'></td>";  //--- added close td
+        tmp += "<td class='cartTotal'>$8,935.00</td>";
+        tmp += "<td class='cartColSpacer'></td>"; //--- added close td
+        tmp += "</tr>";
+        tmp += "<tr><td colspan='10' class='cartNeutral'></td>";
+        tmp += "<td colspan='1' class='cartRowSpacer'>";
+        tmp += "</table>";
+          
+        return tmp;
+    }
+
+    private int FindPartsTableRow(string strThisPartNumber)
+    {
+        int intTemp = -1;
+        string strThisPN = string.Empty;
+        int intSearchCount = -1;
+        string strThisSearch = string.Empty;
+
+        foreach (DataRow myRow in dtCacheMaster.Rows)
+        {
+            intSearchCount++;
+            strThisPN = myRow["PN_STRIPPED"].ToString();
+            strThisSearch = GenUtils.MakeUCaseNumChar(strThisPartNumber);
+            if (strThisPN == strThisSearch)
+            {
+                intTemp = intSearchCount;
+            }
+        }
+        return intTemp;
+    }
+
+    private void PrintTableOrView(DataTable dt, string label)
+    {
+        if (dt == null)
+        {
+            return;
+        }
+        string temp;
+        int count = - 1;
+        foreach (DataRow myRow in dt.Rows)
+        {
+            temp = "DataTable " + count++ +"-->";
+            foreach (DataColumn myCol in dt.Columns)
+            {
+                temp += myCol.ColumnName + " " +   myRow[myCol] + "\r\n";
+            }
+            Debug.WriteLine(temp);
+        }
+    }
+
+
+    private void PrintTableOrView(DataView dv, string label)
+    {
+        if (dv == null)
+        {
+            return;
+        }
+        string temp;
+        int count = -1;
+        foreach (DataRow myRow in dv.Table.Rows)
+            {
+            temp = "DataView " + count++ + "-->";
+            foreach (DataColumn myCol in dv.Table.Columns)
+            {
+                temp += myRow[myCol] + " ";
+            }
+            Debug.WriteLine(temp);
+            }
+    }
+
+
+    private void BuildPartsGridView(DataTable dtCacheMaster)
+    {
+        gvSearchResults.Columns.Clear();
+
+        BoundField pnBoundField = new BoundField();
+        pnBoundField.DataField = "PN_STRIPPED";
+        pnBoundField.HeaderText = "Part Number";
+
+        BoundField descBoundField = new BoundField();
+        descBoundField.DataField = "DESCRIPTION";
+        descBoundField.HeaderText = "Description";
+
+        gvSearchResults.Columns.Add(pnBoundField);
+        gvSearchResults.Columns.Add(descBoundField);
+
+        gvSearchResults.DataSource = dtCacheMaster;
+        gvSearchResults.DataBind();
+    }
+
+    private void BuildPartsGridViewLinq(DataView dv)
+    {
+        gvSearchResults.Columns.Clear();
+
+        BoundField pnBoundField = new BoundField();
+        pnBoundField.DataField = "PN_STRIPPED";
+        pnBoundField.HeaderText = "Part Number";
+
+        BoundField descBoundField = new BoundField();
+        descBoundField.DataField = "DESCRIPTION";
+        descBoundField.HeaderText = "Description";
+
+        gvSearchResults.Columns.Add(pnBoundField);
+        gvSearchResults.Columns.Add(descBoundField);
+
+        gvSearchResults.DataSource = dv;
+        gvSearchResults.DataBind();
+    }
+
+
+    // ------------------------------------- Account Stuff - caution Duplicated
+
+    //public void SetQuantumTypeDDL(string strThisValue)
+    //{
+    //    string conn = string.Empty;
+    //    conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+
+    //    SqlCommand cmd = new SqlCommand("SELECT * FROM QuantumPricingCategories", new SqlConnection(conn));
+    //    cmd.Connection.Open();
+
+    //    SqlDataReader ddlValues;
+    //    ddlValues = cmd.ExecuteReader();
+
+    //    ddlQuantumGroup.DataSource = ddlValues;
+    //    ddlQuantumGroup.DataValueField = "Category";
+    //    ddlQuantumGroup.DataTextField = "Category";
+    //    ddlQuantumGroup.DataBind();
+
+    //    cmd.Connection.Close();
+    //    cmd.Connection.Dispose();
+
+    //    if (strThisValue != string.Empty)
+    //    {
+    //        foreach (ListItem li in ddlQuantumGroup.Items)
+    //        {
+    //            if (li.Value == strThisValue)
+    //                li.Selected = true;
+    //            break;
+    //        }
+    //    }
+    //    ddlQuantumGroup.Items.Insert(0, "Select Type");
+    //    ddlQuantumGroup.Items[0].Value = "0";
+
+    //}
+
+    /// <summary>
+    /// Called for each row in the Account Admin tables rows
+    /// to set the proper CSS and produced the color flopper
+    /// </summary>
+    /// <returns></returns>
+
+    //public string TblColorSwapper()
+    //{
+    //    x += 1;
+    //    if (x > 1)
+    //    {
+    //        x = 0;
+    //        return "tdAcctsAdminRowsOn";
+    //    }
+    //    else
+    //    {
+    //        return "tdAcctsAdminRowsOff";
+    //    }
+    //}
+
+    //public string showAddressTable(string strType)
+    //{
+    //    string strTemp = "";
+    //    short shLp = 1;
+    //    short shThisCount = 3;
+    //    switch (strType)
+    //    {
+    //        case "ShipTo":
+    //            shThisCount = 3;
+    //            break;
+    //        case "BillTo":
+    //            shThisCount = 1;
+    //            break;
+    //        default:
+    //            shThisCount = 2;
+    //            break;
+    //    }
+    //    for (shLp = 1; shLp <= shThisCount; shLp++)
+    //    {
+    //        strTemp += "<table><tr><td rowspan='4' class='tdAddressEnum'>";
+    //        if (shThisCount == 1)
+    //            strTemp += "";
+    //        else if (shLp == shThisCount)
+    //            strTemp += "0";
+    //        else
+    //            strTemp += shLp;
+
+    //        strTemp += "</td>";
+    //        strTemp += "<td>Address 1</td><td><input type= 'text' id='txt" + strType + "Address1-" + shLp + "' Class ='ecomTextBoxes' style='background-color:White;font-family:Verdana;font-size:8pt;width:300px;' MaxLength = '50' />&nbsp;Delete&nbsp;<input type='checkbox' id='cbDelete" + shLp + "' .></td></tr>";
+    //        strTemp += "<tr><td>Address 2</td><td><input type= 'text' id='txt" + strType + "Address2-" + shLp + "' Class ='ecomTextBoxes'  style='background-color:White;font-family:Verdana;font-size:8pt;width:300px;' MaxLength = '50' /></td></tr>";
+    //        strTemp += "<td>City</td><td><input type= 'text' name='txt" + strType + "City-" + shLp + "'  Class = 'ecomTextBoxes'  style='background-color:White;font-family:Verdana;font-size:8pt;width:100px;' MaxLength = '20' />&nbsp;State&nbsp;<input type= 'text' name='txt" + strType + "State-" + shLp + "'  Class='ecomTextBoxes' style='background-color:White;font-family:Verdana;font-size:8pt;width:50px;' MaxLength = '20' /></td></tr> ";
+
+    //        strTemp += "<td>Country</td><td><input type= 'text' name='txt" + strType + "Country-" + shLp + "'  Class ='ecomTextBoxes' style='background-color:White;font-family:Verdana;font-size:8pt;width:100px;' MaxLength = '20' />&nbsp;Zip&nbsp;<input type= 'text' name='txt" + strType + "Zip-" + shLp + "' Class = 'ecomTextBoxes' style='background-color:White;font-family:Verdana;font-size:8pt;width:50px;' MaxLength = '20' /></td></tr> ";
+    //        strTemp += "</table>";
+    //        if (shLp < shThisCount)
+    //            strTemp += "<hr class='hrAddressDivider' />";
+    //    }
+
+    //    return strTemp;
+    //}
+
+
+    //public string showShipperIDTable()
+    //{
+    //    string strTemp = "";
+    //    short shLp = 1;
+    //    short shThisCount = 3;
+
+    //    for (shLp = 1; shLp <= shThisCount; shLp++)
+    //    {
+    //        strTemp += "<table><tr><td rowspan='4' class='tdAddressEnum'>";
+    //        if (shLp == shThisCount)
+    //            strTemp += "0";
+    //        else
+    //            strTemp += shLp;
+
+    //        strTemp += "</td>";
+    //        strTemp += "<td>Shipper</td><td><input type= 'text' id='txtShipper-" + shLp + "' Class ='ecomTextBoxes' style='background-color:White;font-family:Verdana;font-size:8pt;width:300px;' MaxLength = '50' />&nbsp;Delete&nbsp;<input type='checkbox' id='cbDelete" + shLp + "' .></td></tr>";
+    //        strTemp += "<tr><td>ID Number</td><td><input type= 'text' id='txtShipperID-" + shLp + "' Class ='ecomTextBoxes'  style='background-color:White;font-family:Verdana;font-size:8pt;width:300px;' MaxLength = '50' /></td></tr>";
+    //        strTemp += "</table>";
+
+    //        if (shLp < shThisCount)
+    //            strTemp += "<hr class='hrAddressDivider' />";
+    //    }
+    //    return strTemp;
+    //}
+
+    public void gvAdminTable_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        //string datakeyval = gvAdminTable.DataKeys[gvAdminTable.SelectedIndex].Value.ToString();
+        //showAccountDetail();
+    }
+
+    //---------------------------- Panel control
+
+    // Main update panel --- upPnlSmartPartsBuyer
+    // Login Panel  pnlLogin
+    // Forgotten Login Modal Panel   mpForgottenPassword  -- extender ModalPopupExtenderForgottenPassword 
+
+
+    protected void SetPanels(string mode)
+    {
+
+
+        // close all panels
+
+        pnlLogin.Visible = false;
+
+        pnlAdminAccountGridview.Visible = true;
+        pnlCheckoutSearchMore.Visible = false;
+
+        pnlCheckoutCartApproved.Visible = false;
+        pnlChechoutCartNonApproved.Visible = false;
+
+        pnlSearchVideoGame.Visible = false;
+        pnlSearchVideoGameNonApproved.Visible = false;
+
+        pnlApprovedOrderDetails.Visible = false;
+        pnlNonApprovedOrderDetails.Visible = false;
+ 
+        pnlCanWeHelpYou.Visible = false;
+
+        pnlSearchForParts.Visible = false;
+        lblsearchTitle.Text = "Search for Parts";
+
+        pnlShippingandPayment.Visible = false;
+
+        lblCaddyTimer.Visible = false;
+        gvSearchResults.Visible = false;
+
+ 
+        switch (mode)
+        {
+            case "login":
+                pnlLogin.Visible = true;
+                txtLoginUserName.Focus();
+
+                lblHomePageHelpPanel.Text = buildHelpPanel("HomePage");
+                upHeader.Update();
+    
+
+
+                break;
+            case "logout":
+                pnlLogin.Visible = true;
+                txtLoginUserName.Focus();
+                upHeader.Update();
+
+                lblHomePageHelpPanel.Text = buildHelpPanel("HomePage");
+    
+
+
+
+                break;
+
+            case "search1":
+                pnlSearchForParts.Visible = true;
+                pnlCanWeHelpYou.Visible = true;
+                lblsearchTitle.Text = "Search for Parts";
+                break;
+            case "search2":
+                pnlSearchVideoGame.Visible = true;
+                pnlSearchForParts.Visible = true;
+                pnlApprovedOrderDetails.Visible = true;
+                pnlCanWeHelpYou.Visible = true;
+                pnlCheckoutSearchMore.Visible = true;
+                lblsearchTitle.Text = "Search for More Parts";
+                break;
+            case "checkoutApproved":
+                pnlCheckoutCartApproved.Visible = true;
+                pnlCanWeHelpYou.Visible = true;
+                //pnlApprovedOrderDetails.Visible = true;
+                pnlShippingandPayment.Visible = true;
+                break;
+            case "checkoutNonApproved":
+                pnlChechoutCartNonApproved.Visible = true;
+                pnlCanWeHelpYou.Visible = true;
+                pnlNonApprovedOrderDetails.Visible = true;
+                pnlShippingandPayment.Visible = true;
+                //lbLogOut.Visible = true;
+                break;
+            case "LostPassword":
+                break;
+
+        }
+
+        upPnlSmartPartsBuyer.Update();
+    }
+
+
+
+
+
+    // ---------------- Button click events stack
+    protected void btnPartsSearchfromCart_Click(object sender, EventArgs e)
+    {
+       SetPanels("search2");
+    }
+    protected void btnPartsSearchfromRFQ_Click(object sender, EventArgs e)
+    {
+        SetPanels("search2");
+    }
+
+    protected void btnCheckoutNow_Click(object sender, EventArgs e)
+    {
+        //handleCheckout()
+        //GeneralPartsSearch("checkoutApproved");
+        //lblCheckoutCart.Text = BuildCheckoutCart(GeneralPartsSearch("checkoutApproved")); 
+        SetPanels("checkoutApproved");
+    }
+    protected void btnSearchmore_Click(object sender, EventArgs e)
+    {
+        btnPartsSearch.Focus();
+        //GenUtils.FocusControlOnPageLoad("btnPartsSearch", Page);
+        //var prm = Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestEventHandler);
+    }
+
+
+    protected void btnRecoverPassword_Click(object sender, EventArgs e)
+    {
+       
+        handleForgottenPassword();
+
+    }
+
+    protected void btnForgottenCancel_Click(object sender, EventArgs e)
+    {
+        lblPWrecoveryMsg.Text = string.Empty;
+        txtForgotUserName.Text = string.Empty;
+        txtForgotEmail.Text = string.Empty;
+        btnForgottenCancel.Text = "Cancel";
+        btnRecoverPassword.Visible = true;
+        ModalPopupExtenderForgottenPassword.Hide();
+        txtLoginUserName.Focus();
+        //upPnlSmartPartsBuyer.Update();
+    }
+
+
+    protected void ibEditMyAccount_Click(object sender, EventArgs e)
+    {
+
+
+    }
+
+    protected void btnAccountEditPanelSave2_Click(object sender, EventArgs e)
+    {
+        saveAccountEditPanel();
+    }
+    protected void btnAccountEditPanelSave1_Click(object sender, EventArgs e)
+    {
+        saveAccountEditPanel();
+    }
+    protected void btnPartsPanelSave2_Click(object sender, EventArgs e)
+    {
+        savePartsDetailPanel();
+    }
+    protected void btnPartsPanelSave1_Click(object sender, EventArgs e)
+    {
+        savePartsDetailPanel();
+    }
+    protected void btnUpdateSmartBuyer_Click(object sender, EventArgs e)
+    {
+
+        PartsCacheManager("Update");
+
+        SetPanels("search2");
+
+        ModalPopupExtenderThrobber.Hide();
+
+    }
+    protected void btnPartsSearch_Click(object sender, EventArgs e)
+    {
+
+        PartsCacheManager("SearchMore");
+        SetPanels("search2");
+
+        ModalPopupExtenderThrobber.Hide();
+
+    }
+    protected void btnLogin_Click(object sender, EventArgs e)
+    {
+        UserLogin("btnLogin_Click");
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+       
+    }
+    protected void btnPlaceOrder_Click(object sender, EventArgs e)
+    {
+        //string strErrorDec = "";
+        //Response.Write("<script language='javascript'>alert('The following errors have occurred: \n" + strErrorDec + " .');</script>");
+        //upPnlSmartPartsBuyer.Update();
+        
+        UserLogOut();
+
+    }
+
+    protected void btnLogOut_Click(object sender, EventArgs e)
+    {
+        UserLogOut();
+    }
+
+
+    //protected void btnShowAllMode_Click(object sender, EventArgs e)
+    //{
+    //    //+++++++++++++++++++++++++++++++
+    //     //history.AddEntry(contentList.SelectedIndex.ToString();
+    //    SetPanels("session");
+    //}
+
+    //protected void btnEditModalParts_Click(object sender, EventArgs e)
+    //{
+      
+    //}
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    private void onHistoryNavigate(object sender, HistoryEventArgs e)
+    {
+
+        //int selectedIndex = 0;
+
+        //if (String.IsNullOrEmpty(e.Identifier) == false)
+        //{
+        //    selectedIndex = Int32.Parse(e.Identifier);
+        //}
+
+        //// Update the content being displayed in the page
+        //contentList.SelectedIndex = selectedIndex;
+
+        //// Mark the update panels as needing an update
+        //mainUpdatePanel.Update();
+    } 
+
+    //----------------------------------------------- Panel Exit Actions
+    protected void savePartsDetailPanel()
+    {
+        Page.Validate("vgParts");
+        //if (!Page.IsValid)
+        //{
+        //    ModalPopupExtenderPartsDetail.Show();
+        //}
+        //else
+        //{
+            // Update the database record
+            // Retrieve the saved data
+           
+            //lblShowTime.Text = "The AJAX panel has been updated without a postback from the Parts Modal Panel at: " + DateTime.Now;
+
+            ModalPopupExtenderPartsDetail.Hide();
+            upPnlSmartPartsBuyer.Update();
+        //}
+
+
+    }
+    protected void handleForgottenPassword()
+    {
+
+        //Page.Validate("vgForgottenPassword");
+        //lblShowTime.Text = "The AJAX panel has been updated without a postback from the Forgotten Password Panel at: " + DateTime.Now;
+
+        //DataTable dtPW = null;
+
+
+        //pnlForgottenContent.Visible = false;
+        //pnlForgottenThrobber.Visible = true;
+        //upForgottenPW.Update();
+
+        string dbUserName = string.Empty;
+        string dbFirstName = string.Empty;
+        string dbLastName = string.Empty;
+        string dbPW = string.Empty;
+        string dbEmail = string.Empty;
+        string emailBody = string.Empty;
+
+        lblPWrecoveryMsg.Text = string.Empty;
+        btnForgottenCancel.Text = "Cancel";
+        btnRecoverPassword.Visible = true;
+
+        DataSet dsPW;
+        dsPW = new DataSet();
+
+        if (txtForgotEmail.Text.Trim().ToLower() == string.Empty && txtForgotUserName.Text.Trim().ToLower() == string.Empty)
+        {
+            lblPWrecoveryMsg.Text = "Please enter either your username or password.";
+
+        }
+        else
+        {
+
+            bool firstPlaced = false;
+            string conn = string.Empty;
+            conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+            SqlConnection sqlConn = new SqlConnection(conn);
+            string queryString = "SELECT UserName, FirstName, LastName, Password, EmailAddress FROM ecom_UserAccounts WHERE ";
+            if (txtForgotEmail.Text.Trim().ToLower() != string.Empty)
+            {
+                queryString += " LOWER(EmailAddress) = '" + txtForgotEmail.Text.Trim().ToLower() + "' ";
+                firstPlaced = true;
+            }
+
+            if (txtForgotUserName.Text.Trim().ToLower() != string.Empty)
+            {
+                if (firstPlaced)
+                {
+                    queryString += " OR ";
+                }
+                queryString += " LOWER(UserName) = '" + txtForgotUserName.Text.Trim().ToLower() + "' ";
+            }
+
+           
+
+            SqlCommand selectCMD = new SqlCommand(queryString, sqlConn);
+            selectCMD.CommandTimeout = 30;
+
+            SqlDataAdapter pwDA = new SqlDataAdapter();
+            pwDA.SelectCommand = selectCMD;
+
+            try
+            {
+                
+                sqlConn.Open();
+                pwDA.Fill(dsPW, "PW");
+                if (dsPW.Tables["PW"].Rows.Count > 0)
+                {
+                    dbUserName = dsPW.Tables["PW"].Rows[0]["UserName"].ToString();
+                    dbPW = dsPW.Tables["PW"].Rows[0]["Password"].ToString();
+                    dbEmail = dsPW.Tables["PW"].Rows[0]["EmailAddress"].ToString();
+                    dbFirstName = dsPW.Tables["PW"].Rows[0]["FirstName"].ToString();
+                    dbLastName = dsPW.Tables["PW"].Rows[0]["LastName"].ToString();
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                sqlConn.Close();
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                sqlConn.Close();
+            }
+
+            if (dsPW.Tables["PW"].Rows.Count > 0)
+            {
+                emailBody = "Hello " + dbFirstName + " " + dbLastName + ";\n\n";
+                emailBody += "Your Username: " + dbUserName + "\n";
+                emailBody += "Your Password: " + dbPW + "\n\n\n";
+                emailBody += dtGlobalAdmin.Rows[0]["JPEName"].ToString() + "\n";
+                emailBody += "Phone " + dtGlobalAdmin.Rows[0]["JPEPhone"].ToString() + "\n";
+                emailBody += "Fax " + dtGlobalAdmin.Rows[0]["JPEFax"].ToString() + "\n";
+               
+
+
+                sendMail(dtGlobalAdmin.Rows[0]["recoverPWFrom"].ToString(), dbEmail, "Password Recovery", emailBody);
+            }
+            else
+            {
+                lblPWrecoveryMsg.Text = "Sorry, we could not locate your account using the information provided.  Please try again or call your sales representative for more help.";
+
+            }
+
+
+        }
+
+
+        //pnlForgottenContent.Visible = true;
+        //pnlForgottenThrobber.Visible = false;
+        //upForgottenPW.Update();
+
+        if (lblPWrecoveryMsg.Text == string.Empty)
+        {
+
+            lblPWrecoveryMsg.Text = "Thank you.  Your information has been emailed to " + dbEmail  + ".";
+            
+            //ModalPopupExtenderForgottenPassword.Hide();
+            //upPnlSmartPartsBuyer.Update();
+            
+
+            btnForgottenCancel.Text = "Close";
+            btnRecoverPassword.Visible = false;
+            btnForgottenCancel.Focus();
+           
+
+        }
+        else
+        {
+            btnForgottenCancel.Text = "Cancel";
+            txtForgotEmail.Text = string.Empty;
+            txtForgotUserName.Text = string.Empty;
+            txtForgotEmail.Focus();
+
+        }
+
+
+        ModalPopupExtenderThrobber.Hide();
+        ModalPopupExtenderForgottenPassword.Show();
+        upForgottenPW.Update();
+
+
+ 
+
+
+    }
+
+
+
+    protected void sendMail(string From, string To, string Subject, string Body)
+    {
+
+        //string file = "data.xls";
+
+        string server = dtGlobalAdmin.Rows[0]["smtpServer"].ToString();
+
+        MailMessage message = new MailMessage(From, To, Subject, Body);
+
+        //// Create  the file attachment for this e-mail message.
+        //Attachment data = new Attachment(file, MediaTypeNames.Application.Octet);
+        //// Add time stamp information for the file.
+        //ContentDisposition disposition = data.ContentDisposition;
+        //disposition.CreationDate = System.IO.File.GetCreationTime(file);
+        //disposition.ModificationDate = System.IO.File.GetLastWriteTime(file);
+        //disposition.ReadDate = System.IO.File.GetLastAccessTime(file);
+        //// Add the file attachment to this e-mail message.
+        //message.Attachments.Add(data);
+
+        //Send the message.
+        SmtpClient client = new SmtpClient(server);
+
+        // Add credentials if the SMTP server requires them.
+        //client.Credentials = CredentialCache.DefaultNetworkCredentials;
+        //1client.Host = "smtp.snapcart.net";
+        System.Net.NetworkCredential SMTPUserInfo = new System.Net.NetworkCredential(dtGlobalAdmin.Rows[0]["smtpUserName"].ToString(), dtGlobalAdmin.Rows[0]["smtpPassword"].ToString());
+
+        client.UseDefaultCredentials = false;
+        client.Credentials = SMTPUserInfo;
+        client.Port = int.Parse(dtGlobalAdmin.Rows[0]["smtpPort"].ToString());
+
+
+        try
+        {
+            client.Send(message);
+        
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("Exception caught in CreateMessageWithAttachment(): {0}",
+                  ex.ToString());
+        }
+     
+
+    }
+
+    protected void saveAccountEditPanel()
+    {
+        Page.Validate("vgAccountAdmin");
+        //string aaa = txtPassword.Text;
+        //string bbb = txtPassword.Value();
+  
+        //lblShowTime.Text = "The AJAX panel has been updated without a postback from the Accounts Modal Panel at:  " + DateTime.Now;
+
+        ModalPopupExtenderAccountUpdate.Hide();
+        upPnlSmartPartsBuyer.Update();
+    }
+
+    //------------------------------------ Set the DDL Values
+    public void SetshippingCarrierDDL(string strThisValue)
+    {
+
+        //string conn = string.Empty;
+        //conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+
+        //SqlCommand cmd = new SqlCommand("SELECT * FROM QuantumPricingCategories", new SqlConnection(conn));
+        //cmd.Connection.Open();
+
+        //SqlDataReader ddlValues;
+        //ddlValues = cmd.ExecuteReader();
+
+        //ddlShipperCarrier.DataSource = ddlValues;
+        //ddlShipperCarrier.DataValueField = "Category";
+        //ddlShipperCarrier.DataTextField = "Category";
+        //ddlShipperCarrier.DataBind();
+
+        //cmd.Connection.Close();
+        //cmd.Connection.Dispose();
+
+
+        //if (strThisValue != string.Empty)
+        //{
+        //    foreach (ListItem li in ddlShipperCarrier.Items)
+        //    {
+        //        if (li.Value == strThisValue)
+        //            li.Selected = true;
+        //        break;
+        //    }
+        //}
+
+        ddlShipperCarrier.Items.Clear();
+
+        ddlShipperCarrier.Items.Add(new ListItem("U.P.S.", "1"));
+        ddlShipperCarrier.Items.Add(new ListItem("Federel Express", "2"));
+        ddlShipperCarrier.Items.Add(new ListItem("DHL", "3"));
+
+        ddlShipperCarrier.Items.Insert(0, "Select Carrier");
+        ddlShipperCarrier.Items[0].Value = "0";
+    }
+
+    public void ddlShipperCarrier_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+        //pnlShipperDetailsPanel.Visible = false;
+        switch (ddlShipperCarrier.SelectedIndex)
+        {
+            case 0:
+                break;
+            default:
+                //pnlShipperDetailsPanel.Visible = true;
+                break;
+        }
+    }
+
+
+
+
+
+
+    public void SetMyShipperidDDL(string strThisValue, DataTable dtShipVia)
+    {
+
+        ddlMyShipperID.Items.Clear();
+        int lpCounter = -1;
+
+        foreach (DataRow myShipperRow in dtShipVia.Rows)
+        {
+            ddlMyShipperID.Items.Add(new ListItem(myShipperRow["DESCRIPTION"] + " " + myShipperRow["ACCOUNT_NUMBER"], (++lpCounter).ToString()));
+        }
+
+         
+        ddlMyShipperID.Items.Insert(0, "Select My Shipper ID");
+        ddlMyShipperID.Items[0].Value = "0";
+
+
+
+    }
+
+
+
+
+
+
+    public void SetMyShipToAddressDDL(DataTable dtCompany, DataTable dtSites)
+    {
+
+        ddlMyShipToAddress.Items.Clear();
+
+        string bldAddress = string.Empty;
+
+        if (dtCompany.Rows[0]["SHIP_ADDRESS1"].ToString() != string.Empty)
+        {
+            bldAddress = dtCompany.Rows[0]["SHIP_ADDRESS1"].ToString();
+            if (dtCompany.Rows[0]["SHIP_ADDRESS2"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["SHIP_ADDRESS2"].ToString();
+
+            }
+            if (dtCompany.Rows[0]["SHIP_ADDRESS3"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["SHIP_ADDRESS3"].ToString();
+
+            }
+            bldAddress += ", " + dtCompany.Rows[0]["SHIP_CITY"].ToString();
+            bldAddress += ", " + dtCompany.Rows[0]["SHIP_STATE"].ToString();
+            if (dtCompany.Rows[0]["SHIP_COUNTRY"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["SHIP_COUNTRY"].ToString();
+
+            }
+            if (dtCompany.Rows[0]["SHIP_ZIP_CODE"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["SHIP_ZIP_CODE"].ToString();
+
+            }
+        }
+        else
+        {
+            bldAddress = dtCompany.Rows[0]["ADDRESS1"].ToString();
+            if (dtCompany.Rows[0]["ADDRESS2"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["ADDRESS2"].ToString();
+
+            }
+            if (dtCompany.Rows[0]["ADDRESS3"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["ADDRESS3"].ToString();
+
+            }
+            bldAddress += ", " + dtCompany.Rows[0]["CITY"].ToString();
+            bldAddress += ", " + dtCompany.Rows[0]["STATE"].ToString();
+            if (dtCompany.Rows[0]["COUNTRY"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["COUNTRY"].ToString();
+
+            }
+            if (dtCompany.Rows[0]["ZIP_CODE"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + dtCompany.Rows[0]["ZIP_CODE"].ToString();
+
+            }
+        }
+
+
+
+        ddlMyShipToAddress.Items.Add(new ListItem(bldAddress, "1"));
+
+
+        int cntr = 1;
+        
+
+
+        foreach (DataRow mySiteRow in dtSites.Rows)
+        {
+            bldAddress = mySiteRow["ADDRESS1"].ToString();
+            if (mySiteRow["ADDRESS2"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + mySiteRow["ADDRESS2"].ToString();
+
+            }
+            if (mySiteRow["ADDRESS3"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + mySiteRow["ADDRESS3"].ToString();
+
+            }
+            bldAddress += ", " + mySiteRow["CITY"].ToString();
+            bldAddress += ", " + mySiteRow["STATE"].ToString();
+            if (mySiteRow["COUNTRY"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + mySiteRow["COUNTRY"].ToString();
+
+            }
+            if (mySiteRow["ZIP_CODE"].ToString() != string.Empty)
+            {
+                bldAddress += ", " + mySiteRow["ZIP_CODE"].ToString();
+
+            }
+            ddlMyShipToAddress.Items.Add(new ListItem(bldAddress, (++cntr).ToString()));
+        }
+
+
+        ddlMyShipToAddress.Items.Insert(0, "Select My Ship To Address");
+        ddlMyShipToAddress.Items[0].Value = "0";
+
+    }
+    public void SetMyCardTypeDDL(string strThisValue)
+    {
+
+        //MasterCard 51-55
+        //Visa 4
+        //AmEx 34,37
+
+        ddlCardType.Items.Clear();
+
+        ddlCardType.Items.Add(new ListItem("American Express", "AX"));
+
+        ddlCardType.Items.Add(new ListItem("MasterCard", "MC"));
+        ddlCardType.Items.Add(new ListItem("Visa", "VI"));
+
+        ddlCardType.Items.Insert(0, "Select Card Type");
+        ddlCardType.Items[0].Value = "";
+
+    }
+
+
+    //---------------------------------------- Login Algorithms
+
+    DataTable dtAccounts;
+    DataTable dtCompany;
+    DataTable dtSites;
+    DataTable dtShipVia;
+
+
+    /// <summary>
+    /// Called for each row in the Account Admin tables rows
+    /// to set the proper CSS and produced the color flopper
+    /// </summary>
+    /// <returns></returns>
+
+    protected void UserLogin(string mode)
+    {
+        int minPasswordLength = 6;
+        int minUserNameLength = 4;
+        //int maxLoginAttempts = 5;
+        int intMatchAccountKey = -1;
+       
+
+     
+
+        lblLoginError.Text = "";
+
+        string myPassword = txtLoginPassword.Text.Trim();
+        string myUserName = txtLoginUserName.Text.Trim();
+
+        Page.Session["LoggedInUserID"] = -1;
+
+        string myIP = Request.ServerVariables["REMOTE_ADDR"];
+        DateTime currentDate = DateTime.Now;
+        string strUserName = myUserName;
+
+        DateTime noDate = DateTime.Parse("1/1/1900");
+
+        if (myUserName.Length < minUserNameLength)
+        {
+            lblLoginError.Text = "Your User Name must be at least " + minUserNameLength + " characters long.";
+        }
+        if (myPassword.Length < minPasswordLength)
+        {
+            if (lblLoginError.Text.Length > 1)
+                lblLoginError.Text = "Your User Name must be at least " + minUserNameLength + " characters long, and your Password must be at least " + minPasswordLength + " long.";
+            else
+                lblLoginError.Text = "Your Password must be at least " + minPasswordLength + " long.";
+        }
+
+        if (lblLoginError.Text.Length > 1)
+        {
+            lblLoginError.Text += " Please try again.";
+            return;
+        }
+
+
+
+
+
+        dtAccounts = GenUtils.ecom_AccountLookup(myUserName, -1);
+
+
+        
+
+
+        if (dtAccounts.Rows.Count < 1)
+        {
+
+            writeLoginQueue(strUserName, myIP, currentDate, intMatchAccountKey, noDate);
+        }
+        else
+        {
+            DataRow r = dtAccounts.Rows[0];
+
+            if (myPassword == r["Password"].ToString())
+            {
+
+                Page.Session["LoggedInUserID"] = r["pkAccountKey"];
+                Page.Session["UserName"] = r["UserName"].ToString();
+                Page.Session["FirstName"] = r["FirstName"].ToString();
+                Page.Session["LastName"] = r["LastName"].ToString();
+                Page.Session["JobTitle"] = r["JobTitle"].ToString();
+                Page.Session["Company"] = r["Company"].ToString();
+                Page.Session["AccountType"] = r["AccountType"].ToString();
+
+
+                Page.Session["pkAccountKey"] = r["pkAccountKey"];
+                intMatchAccountKey = (int)Page.Session["pkAccountKey"];
+                Page.Session["QuantumCompanyCode"] = r["QuantumCompanyCode"].ToString().ToUpper();
+
+               
+
+                writeLoginQueue(strUserName, myIP, currentDate, intMatchAccountKey, noDate);
+
+              
+                // Load a company record to the dt for pricing
+                dtCompany = GenUtils.CompanyLookup(Page.Session["QuantumCompanyCode"].ToString(), strFileRootPath);
+                dtSites = GenUtils.CompanySitesLookup(Page.Session["QuantumCompanyCode"].ToString());
+                SetMyShipToAddressDDL(dtCompany, dtSites);
+
+                int thisCompanyKey = int.Parse(dtCompany.Rows[0]["CMP_AUTO_KEY"].ToString());
+                dtShipVia = GenUtils.CompanyShippingLookup(thisCompanyKey);
+
+                SetMyShipperidDDL("", dtShipVia);
+
+
+
+
+                lblSalesPersonTable.Text = GenUtils.BuildSalespersonPanel(dtCompany);
+                Session["SalesPersonPanel"] = lblSalesPersonTable.Text;
+
+
+                //if (blnshowDebuggerOutput)
+                    PrintTableOrView(dtCompany, "dtCompany");
+
+
+                SetPanels("search1");
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+  
+
+    protected string buildHelpPanel(string target)
+    {
+        string temp = string.Empty;
+        DataTable dtHelp = null;
+        string orderBy = string.Empty;
+        DataSet dsHelp = new DataSet();
+
+
+        string conn = string.Empty;
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection sqlConn = new SqlConnection(conn);
+        string queryString = "SELECT * FROM ecom_HelpText WHERE  (";
+
+        switch (target) {
+            case "HomePage":
+                queryString += " displayOrderHomePage > 0 ";
+                orderBy = " displayOrderHomePage ";
+                break;
+            case "modalHelp":
+                queryString += " displayOrderHomePage > 0 ";
+                orderBy = " displayOrdermodalHelp ";
+                break;
+            default:
+                return string.Empty;
+        }
+        
+        queryString += ") ORDER BY " + orderBy + ";";
+
+
+        
+        SqlCommand selectCMD = new SqlCommand(queryString, sqlConn);
+        selectCMD.CommandTimeout = 30;
+
+        SqlDataAdapter helpDA = new SqlDataAdapter();
+        helpDA.SelectCommand = selectCMD;
+
+        try
+        {
+            sqlConn.Open();
+            helpDA.Fill(dsHelp, "Help");
+            dtHelp = dsHelp.Tables["Help"];
+        }
+
+        catch (Exception ex)
+        {
+            sqlConn.Close();
+            Debug.WriteLine(ex.Message);
+          
+            return string.Empty;
+        }
+        finally
+        {
+            sqlConn.Close();
+        }
+
+        int lpCounter = - 1;
+
+        foreach (DataRow myHelpRow in dtHelp.Rows)
+            {
+                temp += " <p class='ecom_SubHeadline'><a name onclick=" + (char)34 + "javascript: return switchMenu('" + target + (++lpCounter).ToString() + "');" + (char)34 + "  style='text-decoration:none;'>" + myHelpRow["Headline"] + "&nbsp;<img src='images/Expand_Icon.jpg' border = '0' alt='Click to Expand Section.'  id='" + target + lpCounter.ToString() +"Img' /></a></p>"; 
+
+            temp += "<div  id='" + target + lpCounter.ToString() + "' style='display:none;'>";
+            temp += "<p class='ecom_BodyText'>" + myHelpRow["Body"] + "</p></div>";
+
+        }
+                
+
+
+        return temp;
+
+
+
+
+    }
+
+    
+
+
+
+    protected void UserLogOut()
+    {
+
+        //lblOnePartLookup.Text = string.Empty;
+        Page.Session["LoggedInUserID"] = -1;
+        Page.Session["UserName"] = string.Empty;
+        Page.Session["FirstName"] = string.Empty;
+        Page.Session["LastName"] = string.Empty;
+        Page.Session["JobTitle"] = string.Empty;
+        Page.Session["Company"] = string.Empty;
+
+        Page.Session["pkAccountKey"] = -1;
+        Page.Session["AccountType"] = string.Empty;
+       
+        Page.Session["QuantumCompanyCode"] = string.Empty;
+
+        //writeLoginQueue(strUserName, myIP, currentDate, intMatchAccountKey, noDate);
+
+        string strCompanyCode = string.Empty;
+
+
+        SetPanels("logout");
+      
+    }
+
+    private void writeLoginQueue(string UserNameEntered, string myIP, DateTime AttemptDateTime, int fkAccountKey, DateTime LockedOutDateTime)
+    
+    {
+        string conn = string.Empty;
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection loginQueueConn = new SqlConnection(conn);
+
+        string queryString = "INSERT INTO ecom_LoginQueue (UserNameEntered, IP, AttemptDateTime, fkAccountKey, LockedOutDateTime) VALUES ('" + UserNameEntered + "', '" + myIP + "', '" + AttemptDateTime + "', " + fkAccountKey + ", '" + LockedOutDateTime + "'); ";
+
+        SqlCommand cmd = new SqlCommand(queryString, loginQueueConn);
+
+        try
+        {
+            loginQueueConn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        catch (Exception ex)
+        {
+            lblLoginError.Text = "Error Updating login attempt: " + ex.ToString();
+        }
+        finally
+        {
+            loginQueueConn.Close();
+        }
+
+    }
+    
+    
+
+    private void writeSearchQueue(DateTime SearchDateTime, int fkAccountKey, string SearchWords, int Qty, char Results)
+    {
+        string conn = string.Empty;
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection searchQueueConn = new SqlConnection(conn);
+
+        string queryString = "INSERT INTO ecom_SearchQueue (SearchWords, fkAccountKey, Quantity, DateTime,,Results) VALUES ('" + SearchWords + "', " + fkAccountKey + "', " + Qty + ", '" + SearchDateTime + "', '" + Results + "'); ";
+
+        SqlCommand cmd = new SqlCommand(queryString, searchQueueConn);
+
+        try
+        {
+            searchQueueConn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        catch (Exception ex)
+        {
+            lblLoginError.Text = "Error Updating login attempt: " + ex.ToString();
+
+        }
+        finally
+        {
+            searchQueueConn.Close();
+        }
+    }
+
+
+    //public void showAccountDetail()
+    //{
+    //    bool blnRecFound = false;
+
+    //        string conn = string.Empty;
+    //        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+    //        SqlConnection sqlConn = new SqlConnection(conn);
+    //        string queryString = "SELECT * FROM ecom_UserAccounts WHERE pkAccountKey = " + Page.Session["pkAccountKey"] + "; ";
+
+    //        SqlCommand selectCMD = new SqlCommand(queryString, sqlConn);
+    //        selectCMD.CommandTimeout = 30;
+
+    //        SqlDataAdapter accountDA = new SqlDataAdapter();
+    //        accountDA.SelectCommand = selectCMD;
+
+    //        try
+    //        {
+    //            sqlConn.Open();
+    //            accountDA.Fill(accountDS, "Accounts");
+    //            dtAccounts = accountDS.Tables["Accounts"];
+
+    //            blnRecFound = true;
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            Debug.WriteLine(ex.Message);
+    //            //lblEmployeeError.Visible = True
+    //            //lblEmployeeError.Text = "Error updating ACEmployees: " & ex.ToString
+
+    //        }
+    //        finally
+    //        {
+    //            sqlConn.Close();
+    //        }
+
+    //    if (blnRecFound)
+    //    {
+    //        DataRow r = dtAccounts.Rows[0];
+    //        //txtUserName.Text = r["UserName"].ToString();
+    //    //    txtFirstName.Text = r["FirstName"].ToString();
+    //    //    txtLastName.Text = r["LastName"].ToString();
+    //    //    txtJobTitle.Text = r["JobTitle"].ToString();
+    //    //    txtPhone.Text = r["Phone"].ToString();
+    //    //    txtFAX.Text = r["FAX"].ToString();
+    //    //    txteMail.Text = r["EmailAddress"].ToString();
+    //    //    txtCompany.Text = r["Company"].ToString();
+    //    }
+    //}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     DataTable dtCacheMaster;
+     string[,] cacheDefine;
+     int cacheColumnCount;
+     string[,] clientSearchList;
+     public int cartTlQty;
+     public decimal cartTlAmount;
+
+
+    //*************************************** New Data Cache Objects
+
+
+    protected string[,] PartsCacheManager(string CallMode)
+     {
+
+
+        DateTime startTime = DateTime.Now;
+
+
+        clientSearchList = new string[1000, 6];
+        string[,] searchWords = new string[1000, 10];
+        string[,] nhaList = new string[1000, 6];
+        string[,] oracleList = new string[1000, 6];
+        int[] imageList = new int[1000];
+
+        string[,] MasterPartsArray = new string[1000, 6];
+
+        DataTable dtNHA = null;
+        DataTable dtOraclePartsMaster = null;
+
+         cartTlQty =0;
+         cartTlAmount = 0m; 
+    
+        int lp;
+        bool qtyChanged1 = false;
+        bool qtyChanged2 = false;
+        bool availChanged = false;
+        bool customPriceChanged = false;
+       
+   
+        blnshowDebuggerOutput = false;
+
+        if (dtCacheMaster != null)
+        {
+            dtCacheMaster.Rows.Clear();
+        }
+  
+
+
+
+        //-----------------------recall the current Cache from the ActiveCache Table
+        dtCacheMaster = GenUtils.GetCacheforSessionID(MySessionId);
+        if (dtCacheMaster == null)
+        {
+            dtCacheMaster = defineCacheMaster(true);
+        }
+        else
+        {
+            //--- if there is not a SQL cache, define the table 
+            defineCacheMaster(false);
+        }
+
+        //PrintTableOrView(dtCacheMaster, "Cache - CacheMaster:");
+
+
+        //--- create the master hash
+        clientSearchList = SPBScreenScraper("ScreenScrape");
+
+        qtyChanged1 = updateQtyFromScraper(clientSearchList);
+
+
+
+
+        searchWords = RemoveDuplicates(clientSearchList);
+        int swCounter = findUpperElement(searchWords);
+
+
+
+        //-------------------->>>>>>>>>>>>>>>>>>>>>
+
+        // return searchwords for older stacking
+
+
+        // searchWords[x,3] used flag set here
+        // searchWords[x,4] available qty
+        //searchWords[lp, 0] != "DUPLICATE"
+        //searchWords[lp, 3] = "SingleMatch";
+        //searchWords[lp, 3] = "NHAMatch";
+        // searchWords[swCounter, 0] = myPartNumber.Trim();
+        //searchWords[swCounter, 1] = myQty;
+        //searchWords[swCounter, 2] = myPanel;
+        //searchWords[swCounter, 0] = Request.Form[name].Trim();
+        //searchWords[swCounter, 1] = Request.Form["txtSearch_Qty_" + tmp[2]].Trim();
+        //searchWords[swCounter, 2] = "SearchPanel";
+  
+
+
+
+        //----------------- append the NHA parts to the temp master list
+        dtNHA = FindAllNHAItems(searchWords);
+        nhaList = addNHAtoMasterTable(dtNHA, MySessionId);
+
+       //PrintTableOrView(dtCacheMaster, "Cache - CacheMaster:");
+
+
+        //------ Combine the three lists then remove duplicates, and determine is cached or Oracle
+        MasterPartsArray = partsListRemoveDups(searchWords, nhaList);
+
+
+        //------ compare the master list to the cache table
+        bool firstplaced = false;
+        string strWhereString = " WHERE (";
+    
+        for (lp=0; lp <= 999; lp++)
+        {
+            if (MasterPartsArray[lp, 0] != null)
+            {
+                if (MasterPartsArray[lp, 3] != "ORA+")
+                {
+                    if (firstplaced)
+                    {
+                        strWhereString += " OR ";
+                    }
+                    else
+                    {
+                        firstplaced = true;
+                    }
+                    strWhereString += "p.PN_STRIPPED like '" + GenUtils.MakeUCaseNumChar(MasterPartsArray[lp, 0]) + "%'";
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        strWhereString += ") ";
+        if (firstplaced)
+        {
+
+            //----- Remove dupes again?
+
+
+
+            Debug.WriteLine("should be getting smaller: " + strWhereString);
+
+            dtOraclePartsMaster = GenUtils.FindParts(strWhereString);
+            //------------------------ Now expand the datatable and move the oracle data into it.
+            oracleList = addOracleParstsMastertoMasterTable(dtOraclePartsMaster, MySessionId , "OR_PART");
+
+            //---------- Now loop through the table and produce a list of all keys for the image lookup
+            //  and a list of all Alternate parts which are not OEM Loaded
+            //  load the list of unloaded Alternate narts from Oracle and return the list is
+            //  PNM_AUTO_KEYS for the Image Lookup
+            loadImagestoDT(LoadAlternatesandImages(MySessionId));
+
+
+
+            //tmp = "https://jetserve1.jetpartsengineering.com/qimg/" + temp.Rows[0]["IMAGE_KEY"].ToString() + ".qid";
+            //tmp = "images\\noimage.png";
+   
+
+            //------------------ Apply custom pricing
+            strWhereString = "Select CMP_AUTO_KEY, FOREIGN_UNIT_PRICE, SYSUR_AUTO_KEY, FOREIGN_LIST_PRICE, UNIT_PRICE, LIST_PRICE, REMARKS, DISCOUNT, PRICE_LINE, PNM_AUTO_KEY FROM PRICES WHERE CMP_AUTO_KEY = 45";
+
+            // -------------------------- set the parts prices
+            priceTheParts();
+
+
+            //------ write it all to our Cache manager 
+            //updateTheCache(dtCacheMaster, MySessionId);
+
+
+        }
+
+
+       
+
+        //---------- Take the Current Screen Scrape Quantities and include in the Master Hash
+        qtyChanged2 = loadScrapeQuantities(dtCacheMaster, searchWords, swCounter);
+
+     
+
+        availChanged = UpdateStockLines();
+
+        customPriceChanged = UpdateCustomPricing(156);
+
+        priceTheParts();
+
+
+
+        
+        // ------ print the resultant array to the debugger window
+        if (blnshowDebuggerOutput)
+        {
+            for (lp = 0; lp <= 999; lp++)
+            {
+                if (MasterPartsArray[lp, 0] == null)
+                {
+                    break;
+                }
+                else
+                {
+                    Debug.WriteLine("clientSearchMaster: " + lp + " " + MasterPartsArray[lp, 0] + " " + MasterPartsArray[lp, 1] + " " + MasterPartsArray[lp, 2] + " " + MasterPartsArray[lp, 3]);
+                }
+            }
+
+            //-------------- print the NHA dataTable
+            //PrintTableOrView(dtNHA, "Cache - NHA:");
+
+            //-------------- print the cache dataTable dataTable
+            PrintTableOrView(dtCacheMaster, "Cache - CacheMaster:");
+
+
+            Debug.WriteLine("Session ID: " + MySessionId);
+        }
+
+
+      
+        
+
+
+
+
+        // ********************** Linq to SQL
+        //string connString = ConfigurationSettings.AppSettings["SQL2005_623673_jetConnectionString"];
+
+        //connString = "Data Source=sql2k513.discountasp.net;Initial Catalog=SQL2005_623673_jet;Persist Security Info=True;User ID=SQL2005_623673_jet_user;Password=sell737ng";
+
+        //DataContext myDataContext = new DataContext(connString);
+        //Table<ECOM_GlobalAdmin> globalData = myDataContext.GetTable<ECOM_GlobalAdmin>();
+
+        //// returns a list of objects
+
+        //if (blnshowDebuggerOutput)
+        //Debug.WriteLine(myDataContext.Log);
+
+        //IQueryable<ECOM_GlobalAdmin> query3 =
+        //    from ecom_GlobalAdmin in myDataContext.GetTable<ECOM_GlobalAdmin>()
+        //    select ecom_GlobalAdmin;
+
+        //IEnumerable<String> query4 =
+        //    from ecom_GlobalAdmin in myDataContext.GetTable<ECOM_GlobalAdmin>()
+        //    select ecom_GlobalAdmin.changeEmailTo;
+
+        //ObjectDumper.Write(query3);
+        //***************************** 
+
+
+        //------ place the SmartPartsBuyer Panel into the PalceHolder
+        Label lblSmartBuyerPanel = new Label();
+        lblSmartBuyerPanel.Text = buildSmartBuyerPanel(dtCacheMaster, searchWords, swCounter);
+        phSmartBuyerPanel.Controls.Add(lblSmartBuyerPanel);
+
+
+
+        DateTime stopTime = DateTime.Now;
+        TimeSpan duration = stopTime - startTime;
+        lblCaddyTimer.Text = "dbCaddy Parts LookupTime: " + duration + " using the WCF data access protocol";
+
+
+        //------ write it all to our Cache manager 
+        if (firstplaced || qtyChanged1 || qtyChanged2  || availChanged)
+        {
+            updateTheCache(dtCacheMaster, MySessionId);
+        }
+
+
+        blnshowDebuggerOutput = false;
+
+
+
+        return searchWords;
+    }
+
+
+
+
+    protected bool UpdateStockLines()
+    {
+        bool avlChanged = false;
+        bool firstplaced = false;
+        DataTable dtStock = null;
+        string[] theseSet = new string[1000];
+        int intsetCounter = -1;
+        //string aaaaf;
+
+        //------------- this is still running on all postbacks for parts not contained in the stock table
+
+        string queryString = " SELECT STOCK.PN, STOCK.PNM_AUTO_KEY, STOCK.QTY_AVAILABLE, STOCK.HOLD_LINE FROM STOCK STOCK WHERE ( ";
+
+        foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+        {
+            //aaaaf = myMasterRow["calc_AVL_SET"].ToString();
+
+            if (myMasterRow["calc_AVL_SET"].ToString() != "True")
+            {
+                if (!firstplaced)
+                {
+                    firstplaced = true;
+                }
+                else
+                {
+                    queryString += " OR ";
+                }
+                theseSet[++intsetCounter] = myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString();
+
+                queryString += " STOCK.PNM_AUTO_KEY = " + myMasterRow["pmast_P_PNM_AUTO_KEY"] + " ";
+            }
+        }
+
+        queryString += " ) ORDER BY STOCK.PNM_AUTO_KEY";
+
+
+        if (firstplaced)
+        {
+            avlChanged = true;
+
+
+            try
+            {
+                JetServerHost.MyWCFServiceClient client = new JetServerHost.MyWCFServiceClient();
+                dtStock = client.QuantumLookup(queryString, "83265784305c145r4c3crtb40b0tcb43tc");
+                client.Close();
+            }
+
+            catch (Exception ex)
+            {
+                string strTemp1 = ex.Message;
+            }
+            finally
+            {
+
+            }
+          
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                if (myMasterRow["calc_AVL_SET"].ToString() != "True")
+                {
+                    foreach (DataRow myStockRow in dtStock.Rows)
+                    {
+                       
+                        if ((int.Parse(myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString()) == int.Parse(myStockRow["PNM_AUTO_KEY"].ToString())) && (myStockRow["HOLD_LINE"].ToString() != "T"))
+                        {
+                            myMasterRow["calc_QTY_AVAILABLE"] = int.Parse(myMasterRow["calc_QTY_AVAILABLE"].ToString()) + int.Parse(myStockRow["QTY_AVAILABLE"].ToString());
+                        }
+                    }
+                }
+            }
+
+            //---------------- set the aval set flag
+            //---------------- set the aval set flag
+            int lp;
+            for (lp = 0; lp < 999; lp++)
+            {
+                if (theseSet[lp] == string.Empty)
+                {
+                    break;
+                }
+                foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+                {
+                    if (myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString() == theseSet[lp])
+                    {
+                        myMasterRow["calc_AVL_SET"] = true;
+                        break;
+                    }
+                }
+            }
+
+
+        }
+
+        return avlChanged;
+
+    }
+
+
+
+    protected bool UpdateCustomPricing(int curCompanyCode)
+    {
+        bool priceChanged = false;
+        bool firstplaced = false;
+        DataTable dtPrices = null;
+        string[] theseSet = new string[1000];
+        int intsetCounter = -1;
+
+        //string aaaaf;
+
+        //------------- this is still running on all postbacks for parts not contained in the stock table
+
+        string queryString = " SELECT PNM_AUTO_KEY, UNIT_PRICE FROM PRICES WHERE CMP_AUTO_KEY = " + curCompanyCode  + "  AND ( ";
+
+        foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+        {
+            //string.aaaaf = myMasterRow["calc_AVL_SET"].ToString();
+            if (myMasterRow["calc_PRICE_SET"].ToString() != "True")
+            {
+                if (!firstplaced)
+                {
+                    firstplaced = true;
+                }
+                else
+                {
+                    queryString += " OR ";
+                }
+                theseSet[++intsetCounter] = myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString();
+                queryString += " PNM_AUTO_KEY = " + myMasterRow["pmast_P_PNM_AUTO_KEY"] + " ";
+            }
+        }
+
+        queryString += " ) ORDER BY PNM_AUTO_KEY";
+
+
+        if (firstplaced)
+        {
+            priceChanged = true;
+
+
+            try
+            {
+                JetServerHost.MyWCFServiceClient client = new JetServerHost.MyWCFServiceClient();
+                dtPrices = client.QuantumLookup(queryString, "83265784305c145r4c3crtb40b0tcb43tc");
+                client.Close();
+            }
+
+            catch (Exception ex)
+            {
+                string strTemp1 = ex.Message;
+            }
+            finally
+            {
+
+            }
+
+
+           
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                if (myMasterRow["calc_PRICE_SET"].ToString() != "True")
+                {
+                    foreach (DataRow myPriceRow in dtPrices.Rows)
+                    {
+                        if ((int.Parse(myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString()) == int.Parse(myPriceRow["PNM_AUTO_KEY"].ToString())))
+                        {
+                            myMasterRow["calc_CUSTOM_UNIT_PRICE"] = myPriceRow["UNIT_PRICE"];
+                        }
+                    }
+                }
+            }
+
+            //---------------- set the aval set flag
+            int lp;
+            for (lp = 0; lp < 999; lp++)
+            {
+                if (theseSet[lp] == string.Empty)
+                {
+                    break;
+                }
+                foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+                {
+                    if (myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString() == theseSet[lp])
+                    {
+                        myMasterRow["calc_PRICE_SET"] = true;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        return priceChanged;
+
+    }
+
+
+    protected void priceTheParts()
+    {
+
+        decimal decList = 0m;
+        decimal decCustom = 0m;
+        decimal thisSell = 0m;
+
+        cartTlQty = 0;
+        cartTlAmount = 0m;
+
+        foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+        {
+
+            decList = (Decimal)myMasterRow["pmast_LIST_PRICE"];
+            decCustom = (Decimal)myMasterRow["calc_CUSTOM_UNIT_PRICE"];
+
+            thisSell = decList;
+            if (decCustom > 0)
+            {
+                thisSell = decCustom;
+            }
+            myMasterRow["calc_SELL_PRICE"] = thisSell;
+
+            cartTlQty += (int)myMasterRow["cur_QTY_ORDERED"];
+            cartTlAmount += ((int)myMasterRow["cur_QTY_ORDERED"] * thisSell);
+
+        }
+    }
+
+
+    protected bool updateQtyFromScraper(string[,] scraperList)
+    {
+        int lp = -1;
+        bool qtyChanged = false;
+
+        for (lp = 0; lp < 999; lp++)
+        {
+            if (scraperList[lp, 0] == null)
+            {
+                return qtyChanged;
+            }
+
+          else if (scraperList[lp, 0] == string.Empty)
+            {
+                return qtyChanged;
+            }
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                if (GenUtils.MakeUCaseNumChar(scraperList[lp, 0]) == myMasterRow["partNumberStripped"].ToString())
+                {
+                    if ((int)myMasterRow["cur_QTY_ORDERED"] != int.Parse(scraperList[lp, 1]))
+                    {
+                        qtyChanged = true;
+                        myMasterRow["cur_QTY_ORDERED"] = int.Parse(scraperList[lp, 1]);
+                        break;
+                    }
+                    
+                }
+
+            }
+        }
+        return qtyChanged;
+
+    }
+
+    protected Boolean loadScrapeQuantities(DataTable dtCacheMaster, string[,] searchWords, int swCounter)
+    {
+
+    int lp;
+    int intCurRow;
+    int dtRowCounter = -1;
+    bool qtyChanged = false;
+    foreach (DataRow myMTRow in dtCacheMaster.Rows)
+    {
+        dtCacheMaster.Rows[++dtRowCounter]["CurrentSearchMatch"] = string.Empty;
+    }         
+
+  
+    for (lp = 0; lp <= swCounter; lp++)
+        {
+            dtRowCounter = -1;
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                dtRowCounter++;
+                if (myMasterRow["pmast_PN_STRIPPED"].ToString() == GenUtils.MakeUCaseNumChar(searchWords[lp, 0]) )
+                {
+                    //----- apply to the JPN Numbee if OEM number entered
+
+                    intCurRow = findJPNRow(dtRowCounter, dtCacheMaster);
+
+                   
+                     dtCacheMaster.Rows[intCurRow]["CurrentSearchMatch"] = GenUtils.MakeUCaseNumChar(searchWords[lp, 0]);
+
+                    if (GenUtils.MakeNumbersOnly(searchWords[lp, 1]) != string.Empty)
+                    {
+                         if (dtCacheMaster.Rows[intCurRow]["cur_QTY_ORDERED"].ToString() != GenUtils.MakeNumbersOnly(searchWords[lp, 1]))
+                         {
+
+                        dtCacheMaster.Rows[intCurRow]["cur_QTY_ORDERED"] = Int32.Parse(GenUtils.MakeNumbersOnly(searchWords[lp, 1]));
+                             qtyChanged = true;
+                         }
+                    }
+                    dtCacheMaster.Rows[intCurRow]["cur_LAST_LIST_PANEL"] = searchWords[lp, 2];
+                    break;
+                }
+
+            }
+        }
+
+        return qtyChanged;
+
+    }
+
+
+    protected void loadImagestoDT(int[] imageList)
+    {
+
+        int[] loadedKeys = new int[1000];
+        int loadedKeyCounter = -1;
+        int lp, slp;
+        bool firstplaced = false;
+        bool matchFound = false;
+        DataTable dtImages = null;
+
+
+        string strWhereString = " WHERE SOURCE_TABLE = 'PARTS_MASTER' AND (";
+
+        for (lp = 0; lp <= 999; lp++)
+        {
+            if ((lp > 0) && (imageList[lp] == 0))
+            {
+                break;
+            }
+            matchFound = false;
+            for (slp = 0; slp <= 999; slp++)
+            {
+                if (loadedKeys[slp] == imageList[lp])
+                {
+                    matchFound = true;
+                    break;
+                }
+                if ((slp > 0) && (imageList[slp] == 0))
+                {
+                    break;
+                }
+            }
+
+            if (!matchFound)
+            {
+                foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+                {
+                    if (myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString() == imageList[lp].ToString()  && myMasterRow["imagesLoaded"].ToString() == "True")
+                    {
+                        matchFound = true;
+                        break;
+                    }
+
+                }
+            }
+            
+            if (!matchFound)
+            {
+                loadedKeys[++loadedKeyCounter] = imageList[lp];
+
+                if (firstplaced)
+                {
+                    strWhereString += " OR ";
+                }
+                else
+                {
+                    firstplaced = true;
+                }
+                strWhereString += " SOURCE_PK =" + imageList[lp] + " ";
+            }
+        }
+        strWhereString += ") ";
+
+        if (firstplaced)
+        {
+
+            string queryString = "Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK  FROM image_list i JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY ";
+ 
+            queryString += strWhereString;
+            queryString += " ORDER BY p.PN";
+
+            if (blnshowDebuggerOutput)
+                Debug.WriteLine(queryString);
+            try
+            {
+                JetServerHost.MyWCFServiceClient client = new JetServerHost.MyWCFServiceClient();
+                dtImages = client.QuantumLookup(queryString, "83265784305c145r4c3crtb40b0tcb43tc");
+                client.Close();
+            }
+            catch (Exception ex)
+            {
+                string strTemp1 = ex.Message;
+            }
+            finally
+            {
+            }
+             if (dtImages != null)
+            {
+                foreach (DataRow imageRow in dtImages.Rows)
+                {
+                    foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+                    {
+                        if (myMasterRow["pmast_P_PNM_AUTO_KEY"] != DBNull.Value && myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString() != string.Empty && imageRow["SOURCE_PK"] != DBNull.Value && imageRow["SOURCE_PK"].ToString() != string.Empty)
+                        {
+
+                            if (myMasterRow["pmast_P_PNM_AUTO_KEY"].ToString() == imageRow["SOURCE_PK"].ToString())
+                            {
+                                if (imageRow["FILE_EXT"].ToString().ToLower() == ".jpg")
+                                {
+                                    myMasterRow["image_IMG1_FILE_NAME"] = imageRow["FILE_NAME"];
+                                    myMasterRow["image_IMG1_FILE_EXT"] = imageRow["FILE_EXT"];
+                                    myMasterRow["image_IMG1_KEY"] = imageRow["IMAGE_KEY"];
+                                }
+                                else if (myMasterRow["image_IMG2_FILE_NAME"] == DBNull.Value || myMasterRow["image_IMG2_FILE_NAME"].ToString() == string.Empty)
+                                {
+                                    myMasterRow["image_IMG2_FILE_NAME"] = imageRow["FILE_NAME"];
+                                    myMasterRow["image_IMG2_FILE_EXT"] = imageRow["FILE_EXT"];
+                                    myMasterRow["image_IMG2_KEY"] = imageRow["IMAGE_KEY"];
+
+                                }
+                                else if (myMasterRow["image_IMG3_FILE_NAME"] == DBNull.Value || myMasterRow["image_IMG3_FILE_NAME"].ToString() == string.Empty)
+                                {
+                                    myMasterRow["image_IMG3_FILE_NAME"] = imageRow["FILE_NAME"];
+                                    myMasterRow["image_IMG3_FILE_EXT"] = imageRow["FILE_EXT"];
+                                    myMasterRow["image_IMG3_KEY"] = imageRow["IMAGE_KEY"];
+
+                                }
+                                else if (myMasterRow["image_IMG4_FILE_NAME"] == DBNull.Value || myMasterRow["image_IMG4_FILE_NAME"].ToString() == string.Empty)
+                                {
+                                    myMasterRow["image_IMG4_FILE_NAME"] = imageRow["FILE_NAME"];
+                                    myMasterRow["image_IMG4_FILE_EXT"] = imageRow["FILE_EXT"];
+                                    myMasterRow["image_IMG4_KEY"] = imageRow["IMAGE_KEY"];
+
+                                }
+                                myMasterRow["imagesLoaded"] = true;
+                                break;
+                            }
+                        }
+                        myMasterRow["imagesLoaded"] = true;
+                    }
+
+                }
+            }
+        }
+    }
+
+    protected int[] LoadAlternatesandImages(string MySessionID)
+    {
+
+        int[] tempImages = new int[1000];
+        int imageCounter = -1;
+        int[] tempNotLoadedKeys = new int[1000];
+        int notLoadedCounter = - 1;
+        DataTable oemPartsLookup;
+        string[,] oemList = new string[1000, 6];
+
+        bool matchFound = false;
+
+        foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+        {
+            if (myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != null && myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != DBNull.Value)
+            {
+                tempImages[++imageCounter] = (int)myMasterRow["pmast_ALT_PNM_AUTO_KEY"];
+            }
+            if (myMasterRow["pmast_P_PNM_AUTO_KEY"] != null && myMasterRow["pmast_P_PNM_AUTO_KEY"] != DBNull.Value)
+            {
+                tempImages[++imageCounter] = (int)myMasterRow["pmast_P_PNM_AUTO_KEY"];
+            }
+
+
+            matchFound = false;
+
+            foreach (DataRow myTestRow in dtCacheMaster.Rows)
+            {
+                if (myTestRow["pmast_P_PNM_AUTO_KEY"] != null && myTestRow["pmast_P_PNM_AUTO_KEY"] != DBNull.Value && myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != null && myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != DBNull.Value)
+                {
+                    if ((int)myTestRow["pmast_P_PNM_AUTO_KEY"] == (int)myMasterRow["pmast_ALT_PNM_AUTO_KEY"])
+                    {
+                        matchFound = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    matchFound = true;
+                }
+            }
+            if (!matchFound && myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != null && myMasterRow["pmast_ALT_PNM_AUTO_KEY"] != DBNull.Value)
+            {
+                tempNotLoadedKeys[++notLoadedCounter] = (int)myMasterRow["pmast_ALT_PNM_AUTO_KEY"];
+            }
+        }
+
+        int lp;
+        bool firstplaced = false;
+        string strWhereString = " WHERE (";
+
+        if (notLoadedCounter > -1)
+        {
+            for (lp = 0; lp <= 999; lp++)
+            {
+                if (tempNotLoadedKeys[lp] > 0)
+                {
+                    if (firstplaced)
+                    {
+                        strWhereString += " OR ";
+                    }
+                    else
+                    {
+                        firstplaced = true;
+                    }
+                    strWhereString += "p.PNM_AUTO_KEY =" + tempNotLoadedKeys[lp] + " ";
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+            strWhereString += ") ";
+            //Debug.WriteLine("find OEM Parts: " + strWhereString);
+            oemPartsLookup = GenUtils.FindParts(strWhereString);
+            oemList = addOracleParstsMastertoMasterTable(oemPartsLookup, MySessionID, "OR_ALTERNATE");
+        }
+        
+        return tempImages;
+
+    }
+
+    protected void updateTheCache(DataTable dtCacheMaster, string thisSessionID)
+    {
+        //int timeToLive = 1000;
+       
+        
+        //DateTime cutOffTime;
+        //cutOffTime = DateTime.Now.AddSeconds(-3600); // 3600 is one hour
+
+        string conn = string.Empty;
+
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection sqlConn = new SqlConnection(conn);
+
+        SqlConnection cacheQueueConn = new SqlConnection(conn);
+
+        string queryString = "DELETE FROM ecom_ActiveCache WHERE createDateTime < '" + DateTime.Now.AddSeconds(-1000) + "' OR SessionID = '" +  thisSessionID + "' ; ";
+
+        SqlCommand cmd = new SqlCommand(queryString, cacheQueueConn);
+
+        try
+        {
+            cacheQueueConn.Open();
+            cmd.ExecuteNonQuery();
+        }
+
+        catch (Exception ex)
+        {
+            Debug.WriteLine("Error Updating login attempt: " + ex.ToString());
+        }
+        finally
+        {
+            cacheQueueConn.Close();
+        }
+
+        int slp;
+        string strTitleList = string.Empty;
+        string strValueList = string.Empty;
+        bool blnFirstplaced = false;
+        string strThisValue;
+
+        try
+        {
+            cacheQueueConn.Open();
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                if (myMasterRow["partNumber"] == null)
+                {
+                    break;
+                }
+                else
+                { 
+                    strTitleList = string.Empty;
+                    strValueList = string.Empty;
+                    blnFirstplaced = false;
+                    for (slp = 1; slp <= cacheColumnCount; slp++)
+                    {
+                        if (blnFirstplaced)
+                        {
+                            strTitleList += ", ";
+                            strValueList += ", ";
+                        }
+                        else
+                        {
+                            blnFirstplaced = true;
+                        }
+                        strTitleList += cacheDefine[slp, 0];
+                        switch (cacheDefine[slp, 1])
+                        {
+                            case "String":
+                                {
+                                    strValueList += "'";
+                                    break; 
+                                }
+                            case "DateTime":
+                                {
+                                    strValueList += "'";
+                                    break;
+                                }
+                        }
+                        strThisValue = myMasterRow[cacheDefine[slp, 0]].ToString();
+                        switch (cacheDefine[slp, 1])
+                        {
+                            case "Boolean":
+                                {
+                                    if (strThisValue == "True")
+                                    {
+                                        strValueList += "1";
+                                    }
+                                    else
+                                    {
+                                         strValueList += "0";
+                                    }
+                                    break;
+                                }
+                            case "Int32":
+                                {
+                                    if (strThisValue == string.Empty || strThisValue == null)
+                                    {
+                                        strValueList += "0";
+                                    }
+                                    else
+                                    {
+                                    strValueList += strThisValue;
+                                    }
+
+                                    break;
+                                }
+                            case "Decimal":
+                                {
+                                    if (strThisValue == string.Empty || strThisValue == null)
+                                    {
+                                        strValueList += "0";
+                                    }
+                                    else
+                                    {
+                                     strValueList += strThisValue;
+                                    }
+                                   
+                                    break;
+                                }
+                            default:
+                                {
+                                    strValueList += GenUtils.RemoveReservedChars(strThisValue);
+                                    break;
+                                }
+                        }
+                        switch (cacheDefine[slp, 1])
+                        {
+                            case "String":
+                                {
+                                    strValueList += "'";
+                                    break;
+                                }
+                            case "DateTime":
+                                {
+                                    strValueList += "'";
+                                    break;
+                                }
+                        }
+                    }
+                    queryString = "INSERT INTO ecom_ActiveCache ( " + strTitleList + ") VALUES (" + strValueList + ");" ;
+                    //Debug.WriteLine("---" + queryString);
+                    cmd = new SqlCommand(queryString, cacheQueueConn);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("Error Updating login attempt: " + ex.ToString());
+        }
+        finally
+        {
+            cacheQueueConn.Close();
+        }
+    }
+
+
+    //------------------- Add the NHA Records to the dtCacheMaster
+    protected string[,] addNHAtoMasterTable(DataTable dtNHA, string MySessionId)
+    {
+
+        string [,] arTemp = new string[1000, 6];
+        int arCounter = -1;
+        if (dtNHA != null)
+        {
+            foreach (DataRow myNHARow in dtNHA.Rows)
+            {
+                arTemp[++arCounter, 0] = myNHARow["JPEPN"].ToString();
+                arTemp[arCounter, 1] = "0";
+                arTemp[arCounter, 2] = "NHA_JPE";
+
+                arTemp[++arCounter, 0] = myNHARow["OEMPN"].ToString();
+                arTemp[arCounter, 1] = "0";
+                arTemp[arCounter, 2] = "NHA_OEM";
+
+                if (dtCacheMaster != null)
+                {
+                    addeditNHANumber(myNHARow, "JPEPN", MySessionId);
+                    addeditNHANumber(myNHARow, "OEMPN", MySessionId);
+                }
+            }
+        }
+        return arTemp;
+    }
+
+
+    protected void addeditNHANumber(DataRow myNHARow, string fieldToCompare, string MySessionID)
+    {
+
+        bool blnMatchFound = false;
+        DataRow newRow;
+        string aaar = string.Empty;
+        string aaat = string.Empty;
+
+         foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                aaar = myNHARow[fieldToCompare].ToString();
+                aaat = myMasterRow["partNumber"].ToString();
+                if (myNHARow[fieldToCompare].ToString() == myMasterRow["partNumber"].ToString())
+                {
+                    blnMatchFound = true;
+                    myMasterRow["NHALoaded"] = true;
+                    myMasterRow["nha_NHA"] = myNHARow["NHA"];
+                    myMasterRow["nha_ATAChapter"] = myNHARow["ATAChapter"];
+                    myMasterRow["nha_PartsPerNHA"] = myNHARow["PartsPerNHA"];
+                    myMasterRow["nha_OEMPN"] = myNHARow["OEMPN"];
+                    myMasterRow["nha_JPEPN"] = myNHARow["JPEPN"];
+                    myMasterRow["nha_OEMPrice"] = myNHARow["OEMPrice"];
+                    myMasterRow["nha_JPEPrice"] = myNHARow["JPEPrice"];
+                    myMasterRow["nha_Description"] = myNHARow["Description"];
+                    myMasterRow["nha_NHAName"] =   myNHARow["NHA"] ;
+                    break;
+                }
+            }
+
+         if (!blnMatchFound)  // -- add it
+         {
+             newRow = dtCacheMaster.NewRow();
+             newRow["recordSource"] = "NHA_" + fieldToCompare;
+             newRow["partNumber"] = myNHARow[fieldToCompare];
+             newRow["partNumberStripped"] = GenUtils.MakeUCaseNumChar(myNHARow[fieldToCompare].ToString());
+             newRow["createDateTime"] = DateTime.Now;
+             newRow["SessionID"] = MySessionID;
+             newRow["NHALoaded"] = true;
+             newRow["nha_NHA"] = myNHARow["NHA"];
+             newRow["nha_ATAChapter"] = myNHARow["ATAChapter"];
+             newRow["nha_PartsPerNHA"] = myNHARow["PartsPerNHA"];
+             newRow["nha_OEMPN"] = myNHARow["OEMPN"];
+             newRow["nha_JPEPN"] = myNHARow["JPEPN"];
+             newRow["nha_OEMPrice"] = myNHARow["OEMPrice"];
+             newRow["nha_JPEPrice"] = myNHARow["JPEPrice"];
+             newRow["nha_Description"] = myNHARow["Description"];
+             newRow["nha_NHAName"] = myNHARow["NHA"];
+
+
+
+             //---- set some defaults
+             newRow["cur_QTY_ORDERED"] = 0;
+             newRow["cur_LAST_LIST_PANEL"] = string.Empty;
+             newRow["calc_CUSTOM_UNIT_PRICE"] = 0m;
+             newRow["calc_QTY_AVAILABLE"] = 0;
+             newRow["calc_NEXT_SHIP_QTY"] = 0;
+             newRow["calc_SELL_PRICE"] = 0m;
+
+
+             dtCacheMaster.Rows.Add(newRow);
+         }
+    }
+
+
+    //------------------- Add the NHA Records to the dtCacheMaster
+    protected string[,] addOracleParstsMastertoMasterTable(DataTable dtOraclePartsMaster, string MySessionId, string addType)
+    {
+        bool blnMatchFound = false;
+        DataRow newRow;
+        string[,] pmTemp = new string[1000, 6];
+        int pmCounter = -1;
+
+        string aaar = string.Empty;
+        string aaat = string.Empty;
+
+        if (dtOraclePartsMaster == null)
+        {
+
+            return null;
+        }
+
+
+        foreach (DataRow myOrPartRow in dtOraclePartsMaster.Rows)
+        {
+            blnMatchFound = false;
+
+            pmTemp[++pmCounter, 0] = myOrPartRow["PN"].ToString();
+            pmTemp[pmCounter, 1] = "0";
+            pmTemp[pmCounter, 2] = "ORPART_PN";
+
+            if (dtCacheMaster != null)
+            {
+                foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+                {
+                    aaar = myOrPartRow["PN_STRIPPED"].ToString();
+                    aaat = myMasterRow["partNumberStripped"].ToString();
+                    if (myOrPartRow["PN_STRIPPED"].ToString() == myMasterRow["partNumberStripped"].ToString())
+                    {
+                        blnMatchFound = true;
+                        myMasterRow["OracleLoaded"] = true;
+                        myMasterRow["pmast_PN"] = myOrPartRow["PN"];
+                        myMasterRow["pmast_PN_STRIPPED"] = myOrPartRow["PN_STRIPPED"];
+                        myMasterRow["pmast_DESCRIPTION"] = myOrPartRow["DESCRIPTION"];
+                        myMasterRow["pmast_ALT_PNM_AUTO_KEY"] = myOrPartRow["ALT_PNM_AUTO_KEY"];
+                        myMasterRow["pmast_ALT_PN"] = myOrPartRow["ALT_PN"];
+
+                        myMasterRow["pmast_ALT_PN_STRIPPED"] = myOrPartRow["ALT_PN_STRIPPED"];
+                        myMasterRow["pmast_ALT_DESCRIPTION"] = myOrPartRow["ALT_DESCRIPTION"];
+                        myMasterRow["pmast_ALT_LIST_PRICE"] = myOrPartRow["ALT_LIST_PRICE"];
+                        myMasterRow["pmast_ALT_STC_AUTO_KEY"] = myOrPartRow["ALT_STC_AUTO_KEY"];
+                        myMasterRow["pmast_ALT_QTY_AVAILABLE"] = myOrPartRow["ALT_QTY_AVAILABLE"];
+
+                        myMasterRow["pmast_ECCN"] = myOrPartRow["ECCN"];
+                        myMasterRow["pmast_P_PNM_AUTO_KEY"] = myOrPartRow["P_PNM_AUTO_KEY"];
+                        myMasterRow["pmast_P_STC_AUTO_KEY"] = myOrPartRow["P_STC_AUTO_KEY"];
+                        myMasterRow["pmast_LIST_PRICE"] = myOrPartRow["LIST_PRICE"];
+                        myMasterRow["pmast_QTY_AVAILABLE"] = myOrPartRow["QTY_AVAILABLE"];
+                        myMasterRow["pmast_STOCK_DESC"] = myOrPartRow["STOCK_DESC"];
+
+                        break;
+                    }
+                }
+            }
+            if (!blnMatchFound)  // -- add it
+            {
+                newRow = dtCacheMaster.NewRow();
+                newRow["recordSource"] = addType; //---"OR_PART";
+                newRow["createDateTime"] = DateTime.Now;
+
+                newRow["partNumber"] = myOrPartRow["PN"];
+                newRow["partNumberStripped"] = myOrPartRow["PN_STRIPPED"];
+
+
+
+                newRow["SessionID"] = MySessionId;
+                newRow["OracleLoaded"] = true;
+                newRow["pmast_PN"] = myOrPartRow["PN"];
+                newRow["pmast_PN_STRIPPED"] = myOrPartRow["PN_STRIPPED"];
+                newRow["pmast_DESCRIPTION"] = myOrPartRow["DESCRIPTION"];
+                newRow["pmast_ALT_PNM_AUTO_KEY"] = myOrPartRow["ALT_PNM_AUTO_KEY"];
+                newRow["pmast_ALT_PN"] = myOrPartRow["ALT_PN"];
+
+                newRow["pmast_ALT_PN_STRIPPED"] = myOrPartRow["ALT_PN_STRIPPED"];
+                newRow["pmast_ALT_DESCRIPTION"] = myOrPartRow["ALT_DESCRIPTION"];
+                newRow["pmast_ALT_LIST_PRICE"] = myOrPartRow["ALT_LIST_PRICE"];
+                newRow["pmast_ALT_STC_AUTO_KEY"] = myOrPartRow["ALT_STC_AUTO_KEY"];
+                newRow["pmast_ALT_QTY_AVAILABLE"] = myOrPartRow["ALT_QTY_AVAILABLE"];
+
+
+                newRow["pmast_UNIT_OF_MEASURE"] = myOrPartRow["UNIT_OF_MEASURE"];
+                newRow["pmast_ECCN"] = myOrPartRow["ECCN"];
+                newRow["pmast_P_PNM_AUTO_KEY"] = myOrPartRow["P_PNM_AUTO_KEY"];
+                newRow["pmast_P_STC_AUTO_KEY"] = myOrPartRow["P_STC_AUTO_KEY"];
+                newRow["pmast_P_IFC_AUTO_KEY"] = myOrPartRow["IFC_AUTO_KEY"];
+
+                newRow["pmast_LIST_PRICE"] = myOrPartRow["LIST_PRICE"];
+                newRow["pmast_QTY_AVAILABLE"] = myOrPartRow["QTY_AVAILABLE"];
+                newRow["pmast_STOCK_DESC"] = myOrPartRow["STOCK_DESC"];
+
+                //---- set some defaults
+                newRow["cur_QTY_ORDERED"] = 0;
+                newRow["cur_LAST_LIST_PANEL"] = string.Empty;
+                newRow["calc_CUSTOM_UNIT_PRICE"] = 0m;
+                newRow["calc_QTY_AVAILABLE"] = 0;
+                newRow["calc_NEXT_SHIP_QTY"] = 0;
+                newRow["calc_NEXT_SHIP_DATE"] = string.Empty;
+                newRow["calc_SELL_PRICE"] = 0m;
+
+
+                dtCacheMaster.Rows.Add(newRow);
+            }
+        }
+
+        return pmTemp;
+    }
+
+
+    protected DataTable defineCacheMaster(Boolean buildTable)
+    {
+        DataTable dtTemp = new DataTable();
+
+        cacheDefine = new string[100, 3];
+      
+        cacheColumnCount = -1;
+        int lp;
+
+        cacheDefine[++cacheColumnCount, 0] = "pkCache"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "SessionID"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "CurrentSearchMatch"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "partNumber"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "partNumberStripped"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "recordSource"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "createDateTime"; cacheDefine[cacheColumnCount, 1] = "DateTime";
+        cacheDefine[++cacheColumnCount, 0] = "OracleLoaded"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+        cacheDefine[++cacheColumnCount, 0] = "NHALoaded"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+        cacheDefine[++cacheColumnCount, 0] = "OEMNumberLoaded"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+        cacheDefine[++cacheColumnCount, 0] = "OEMPartLoaded"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+        cacheDefine[++cacheColumnCount, 0] = "imagesLoaded"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+        cacheDefine[++cacheColumnCount, 0] = "nha_NHA"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "nha_ATAChapter"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "nha_PartsPerNHA"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "nha_OEMPN"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "nha_JPEPN"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "nha_OEMPrice"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+        cacheDefine[++cacheColumnCount, 0] = "nha_JPEPrice"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+        cacheDefine[++cacheColumnCount, 0] = "nha_Description"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "nha_NHAName"; cacheDefine[cacheColumnCount, 1] = "String";
+
+        cacheDefine[++cacheColumnCount, 0] = "pmast_PN"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_PN_STRIPPED"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_DESCRIPTION"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_PNM_AUTO_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_PN"; cacheDefine[cacheColumnCount, 1] = "String";
+
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_PN_STRIPPED"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_DESCRIPTION"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_LIST_PRICE"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_STC_AUTO_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ALT_QTY_AVAILABLE"; cacheDefine[cacheColumnCount, 1] = "Int32";
+
+        cacheDefine[++cacheColumnCount, 0] = "pmast_UNIT_OF_MEASURE"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_ECCN"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_P_PNM_AUTO_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_P_STC_AUTO_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_P_IFC_AUTO_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_LIST_PRICE"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_QTY_AVAILABLE"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "pmast_STOCK_DESC"; cacheDefine[cacheColumnCount, 1] = "String";
+
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG1_FILE_NAME"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG1_FILE_EXT"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG1_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG2_FILE_NAME"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG2_FILE_EXT"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG2_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG3_FILE_NAME"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG3_FILE_EXT"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG3_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG4_FILE_NAME"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG4_FILE_EXT"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "image_IMG4_KEY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+
+
+        cacheDefine[++cacheColumnCount, 0] = "cur_QTY_ORDERED"; cacheDefine[cacheColumnCount, 1] = "Int32";
+
+        cacheDefine[++cacheColumnCount, 0] = "cur_LAST_LIST_PANEL"; cacheDefine[cacheColumnCount, 1] = "String";
+
+        cacheDefine[++cacheColumnCount, 0] = "calc_CUSTOM_UNIT_PRICE"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+        cacheDefine[++cacheColumnCount, 0] = "calc_PRICE_SET"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+
+        cacheDefine[++cacheColumnCount, 0] = "calc_QTY_AVAILABLE"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "calc_AVL_SET"; cacheDefine[cacheColumnCount, 1] = "Boolean";
+
+        cacheDefine[++cacheColumnCount, 0] = "calc_NEXT_SHIP_QTY"; cacheDefine[cacheColumnCount, 1] = "Int32";
+        cacheDefine[++cacheColumnCount, 0] = "calc_NEXT_SHIP_DATE"; cacheDefine[cacheColumnCount, 1] = "String";
+        cacheDefine[++cacheColumnCount, 0] = "calc_SELL_PRICE"; cacheDefine[cacheColumnCount, 1] = "Decimal";
+
+
+
+        if (buildTable)
+        {
+
+            for (lp = 0; lp <= cacheColumnCount; lp++)
+            {
+                dtTemp.Columns.Add(addMyColumn(cacheDefine[lp, 0], cacheDefine[lp, 1]));
+
+            }
+        }
+        return dtTemp;
+    }
+
+
+
+    protected DataColumn addMyColumn(string thisID, string thisType)
+    {
+        DataColumn col;
+        col = new DataColumn();
+        col.DataType = System.Type.GetType("System." + thisType);
+        col.ColumnName = thisID;
+        return col;
+    }
+        
+
+
+
+    //----- that the master lid of all parts with focus and remove duplicates
+
+    protected string[,] partsListRemoveDups(string[,] ckListToClean1, string[,] ckListToClean2)
+    {
+        string[,] ckTempRet = new string[1000, 6];
+        string[,] ckCombinedList = new string[1000, 6];
+        int lp, slp;
+        string slpQty = string.Empty;
+        string lpQty = string.Empty;
+        int ckTempCounter = -1;
+        int ckCombinedCounter = -1;
+
+        //int inTopElement = findUpperElement(ckListToClean1);
+        for (lp = 0; lp <= 999; lp++)
+        {
+            if (ckListToClean1[lp, 0] != null)
+            {
+                ++ckCombinedCounter;
+                for (slp = 0; slp <= 5; slp++)
+                {
+                    ckCombinedList[ckCombinedCounter, slp] = ckListToClean1[lp, slp];
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        for (lp = 0; lp <= 999; lp++)
+        {
+            if (ckListToClean2[lp, 0] != null)
+            {
+                ++ckCombinedCounter;
+                for (slp = 0; slp <= 5; slp++)
+                {
+                    ckCombinedList[ckCombinedCounter, slp] = ckListToClean2[lp, slp];
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+      
+
+
+        //---------- Remove any duplicated
+        for (lp = 0; lp <= ckCombinedCounter; lp++)
+        {
+            for (slp = 0; slp <= ckCombinedCounter; slp++)
+            {
+                if ((slp != lp) && (ckCombinedList[lp, 0] == ckCombinedList[slp, 0]))
+                {
+                    lpQty = GenUtils.MakeNumbersOnly(ckCombinedList[lp, 1].ToString());
+                    slpQty = GenUtils.MakeNumbersOnly(ckCombinedList[slp, 1].ToString());
+
+                    if (int.Parse(lpQty) > int.Parse(slpQty))
+                    {
+                        ckCombinedList[lp, 0] = "DUPLICATE";
+                    }
+                    else
+                    {
+                        ckCombinedList[slp, 0] = "DUPLICATE";
+                    }
+                }
+            }
+        }
+
+        //----- produce a return array without duplicates
+        for (lp = 0; lp <= ckCombinedCounter; lp++)
+        {
+            if (ckCombinedList[lp, 0] != "DUPLICATE")
+            {
+                ckTempCounter++;
+                for (slp = 0; slp <= 5; slp++)
+                {
+                    ckTempRet[ckTempCounter, slp] = ckCombinedList[lp, slp];
+                }
+            }
+        }
+
+
+        //---------------------- Now add to col 3 the Oracle Lookup Status
+        for (lp = 0; lp <= ckTempCounter; lp++)
+        {
+
+            foreach (DataRow myMasterRow in dtCacheMaster.Rows)
+            {
+                if (GenUtils.MakeUCaseNumChar(ckTempRet[lp, 0]) == myMasterRow["partNumberStripped"].ToString())
+                {
+                    if (myMasterRow["OracleLoaded"] != null && myMasterRow["OracleLoaded"] != DBNull.Value)
+                    {
+                        if ((Boolean)myMasterRow["OracleLoaded"])
+                        {
+                            ckTempRet[lp, 3] = "ORA+";
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return ckTempRet;
+
+    }
+
+
+    protected int findUpperElement(string[,] thisArray)
+    {
+        int upperElement = -1;
+        int lp;
+
+        for (lp = 0; lp <= 999; lp++)
+        {
+            if (thisArray[lp, 0] == null)
+            {
+                break;
+            }
+            else
+            {
+                upperElement++;
+            }
+        }
+
+        return upperElement;
+    }
+
+
+
+    protected string[,] RemoveDuplicates(string[,] ckList)
+    {
+
+        int lp = -1;
+        int slp = -1;
+        int upperEl = findUpperElement(ckList);
+        string lpQty = string.Empty;
+        string slpQty = string.Empty;
+        
+        //---------- Remove any duplicated
+        for (lp = 0; lp <= upperEl; lp++)
+        {
+            if ((ckList[lp, 2].Substring(0, 4) == "QTY-") && (int.Parse(ckList[lp, 1]) == 0))
+            {
+                ckList[lp, 0] = "ZERO";
+            }
+           
+
+            for (slp = 0; slp <= upperEl; slp++)
+            {
+                if ((slp != lp) && (ckList[lp, 0] == ckList[slp, 0]))
+                {
+                    lpQty = GenUtils.MakeNumbersOnly(ckList[lp, 1].ToString());
+                    slpQty = GenUtils.MakeNumbersOnly(ckList[slp, 1].ToString());
+
+                    if (int.Parse(lpQty) > int.Parse(slpQty))
+                    {
+                        ckList[lp, 0] = "DUPLICATE";
+                    }
+                    else
+                    {
+                        ckList[slp, 0] = "DUPLICATE";
+                    }
+                }
+            }
+            
+        }
+        int ckTempCounter = -1;
+        string[,] ckTempRet = new string[1000, 10];
+
+        //----- produce a return array without duplicates
+        for (lp = 0; lp <= upperEl; lp++)
+        {
+            if (ckList[lp, 0] != "DUPLICATE"  && ckList[lp, 0] != "ZERO")
+            {
+                ckTempCounter++;
+                for (slp = 0; slp <= 5; slp++)
+                {
+                    ckTempRet[ckTempCounter, slp] = ckList[lp, slp];
+                }
+            }
+        }
+
+        return ckTempRet;
+
+    }
+
+
+    //----- Scrape the current Request Form post for all part numbers and associated Quantities
+    protected string[,] SPBScreenScraper(string mode)
+    {
+        string[,] csTemp = new string[1000, 6];
+        int csCounter = -1;
+        string myName, myValue, myPanel, myPartNumber, myFormType;
+        string myQty;
+        foreach (string name in Request.Form)
+        {
+            //Debug.WriteLine(name + " = " + Request.Form[name]);
+            //if (Request.Form[name] != "")
+            //{
+                //-------- add the items from the search panel
+                myName = name.Trim();
+                myValue = Request.Form[name].Trim();
+                myFormType = "";
+
+                if (myName.Length > 17)
+                {
+                    if (myName.Substring(0, 17) == "txtSearch_PartNo_")
+                        myFormType = "SEARCH";
+                }
+
+                if (myName.Length > 7)
+                {
+                    if (myName.Substring(0, 7) == "txtQTY_")
+                        myFormType = "QTY";
+                }
+
+
+
+          
+                if (myFormType == "QTY")
+                {
+                    string[] tmp = myName.Split('_');
+                    //  txtQTY_Search-SingleMatch_110968JP
+                    myPanel = tmp[1];
+                    myPartNumber = tmp[2];
+                    myQty = Request.Form[name];
+                    myQty = GenUtils.MakeNumbersOnly(myQty);
+                    
+                    //if (int.Parse(myQty) > 0)
+                    //{
+                        csCounter++;
+                        csTemp[csCounter, 0] = myPartNumber.Trim();
+                        csTemp[csCounter, 1] = myQty;
+                        csTemp[csCounter, 2] = "QTY-" + myPanel;
+                    //}
+                }
+
+
+
+              if (myValue != string.Empty)
+                {
+                // ---- add the items form the search new items panel
+                    if (myFormType == "SEARCH")
+                    {
+                        string[] tmp = myName.Split('_');
+                        csCounter++;
+                        csTemp[csCounter, 0] = Request.Form[name].Trim();
+                        csTemp[csCounter, 1] = Request.Form["txtSearch_Qty_" + tmp[2]].Trim();
+                        csTemp[csCounter, 2] = "SearchPanel";
+                    }
+                }
+            }
+
+
+
+
+        //}
+        // ------ add the items in the listSearchBox
+        string tbText = listSearchBox.InnerText;
+        if (tbText.Trim() != string.Empty)
+        {
+            tbText = tbText.Replace("\r", "");
+            tbText = tbText.Replace("\t", "~");
+            string[] split1 = tbText.Split('\n');
+            foreach (string s in split1)
+            {
+                if (s.Trim() != string.Empty)
+                {
+                    string[] tmp = s.Split('~');
+                    csCounter++;
+                    csTemp[csCounter, 0] = tmp[0].Trim();
+                    csTemp[csCounter, 1] = "0";
+                    if (tmp.GetUpperBound(0) > 0)
+                    {
+                        csTemp[csCounter, 1] = tmp[1];
+                    }
+                    csTemp[csCounter, 2] = "List";
+                }
+            }
+        }
+        return csTemp;
+    }
+
+
+
+    protected DataTable FindAllNHAItems(string[,] partList)
+    {
+        DataTable dtTemp = null;
+        string conn = string.Empty;
+        conn = ConfigurationManager.ConnectionStrings["SQL2005_623673_jetConnectionString"].ConnectionString;
+        SqlConnection sqlConn = new SqlConnection(conn);
+
+        string queryString = "Select pall.*, n.NHAId, n.ATAChapter, n.PartsPerNHA, nha.NHA from ctdb_Part p JOIN ctdb_Part2NHA n ON n.PartID = p.PartID JOIN ctdb_Part2NHA nall ON nall.NHAID = n.NHAId JOIN ctdb_Part pall ON pall.PartID = nall.PartID Join ctdb_NHA nha ON nha.NHAID = nall.NHAId ";
+        bool blnfirstplaced = false;
+        queryString += " WHERE (";
+        int lp;
+        for (lp = 0; lp <= 999; lp++)
+        {
+            if (partList[lp, 0] == null)
+            {
+                break;
+            }
+            else
+            {
+                if (blnfirstplaced)
+                {
+                    queryString += " OR ";
+                }
+                else
+                {
+                    blnfirstplaced = true;
+                }
+                queryString += " p.OEMPN = '" + partList[lp, 0] + "' OR p.JPEPN = '" + partList[lp, 0] + "' ";
+            }
+        }
+        queryString += ")  ORDER BY pall.JPEPN; ";
+        SqlCommand selectCMD = new SqlCommand(queryString, sqlConn);
+        selectCMD.CommandTimeout = 30;
+
+        SqlDataAdapter nhaDA = new SqlDataAdapter();
+        nhaDA.SelectCommand = selectCMD;
+        DataSet mynhaDS = new DataSet();
+        try
+        {
+            sqlConn.Open();
+            nhaDA.Fill(mynhaDS, "NHA");
+            dtTemp = mynhaDS.Tables["NHA"];
+        }
+
+        catch (Exception ex)
+        {
+            sqlConn.Close();
+            Debug.WriteLine(ex.Message);
+            //lblLoginError.Text = "Login Error: " + ex.ToString();
+        }
+        finally
+        {
+            sqlConn.Close();
+        }
+
+        return dtTemp;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //-------- check a Cache Row to determine if it is the JPN Part Number.  Return the Row Number of the
+    //      JPN Part if not or the current row if it is
+    protected int findJPNRow(int thisRow, DataTable dtCacheMaster)
+    {
+        string findAltPN = string.Empty;
+        int rowCounter = - 1;
+
+        if (dtCacheMaster.Rows[thisRow]["pmast_P_STC_AUTO_KEY"].ToString() != "2")
+        {
+            findAltPN = dtCacheMaster.Rows[thisRow]["pmast_ALT_PN_STRIPPED"].ToString();
+       
+                foreach (DataRow myaltRow in dtCacheMaster.Rows)
+                {
+                    rowCounter++;
+                    if ( myaltRow["pmast_PN_STRIPPED"].ToString() == findAltPN)
+                    {
+                        return rowCounter;
+                    }
+               }
+        }
+
+        return thisRow;
+                   
+                   
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    //----------------------- Build the main viewport table for the Smart Parts Buyer
+    protected string buildSmartBuyerPanel(DataTable dtCacheMaster, string[,] searchWords, int swCounter)
+    {
+        string tmp = string.Empty;
+        int lp;
+        //bool firstPlaced = false;
+
+        //------------------------ Main View Port Header
+        tmp = "<table class='SBecomTable'>";
+        tmp += "<tr><td class='SBHeaderBarTD' colspan='3'>";
+        tmp += "JPE Smart Parts Buyer - Version 6.0";
+        tmp += "</td></tr>";
+        tmp += "<td class='SBViewPortBorderTD'></td>";
+        tmp += "<td class='SBViewPortContentTD'>";
+
+        // searchWords[x,3] used flag set here
+        // searchWords[x,4] available qty
+        // 
+
+        // ----- step one: find exact matches and look for 
+        string strPartNumber, strOEMPartNumber, strDescription, strImage, strLinkID;
+        decimal decCost, decExt;
+        //decimal decList, decCustom;
+        int intQtyOrdered, intAvl, intBO, intPartKey, intIFCKey;
+        int intCurRow;
+        string strSearchList = string.Empty;
+        string strThisPN = string.Empty;
+        string strThisSearch = string.Empty;
+        int intStockCetegoryKey, intILSKey;
+        string[] strTemp;
+        int intNHAThisSingleMatch = 0;
+        bool blnNHAshowMore = false;
+        int controlRowCounter = - 1;
+        bool showthisRow = false;
+        string strDebug = string.Empty;
+
+
+        int nhaRowMatch = -1;
+
+        int intShowNHARows = 100;
+        if (Request.Form["txtMaxNHA"].ToString() != string.Empty)
+        {
+            intShowNHARows = int.Parse(Request.Form["txtMaxNHA"]);
+        }
+        string[,] strPlacedPartNumbers = new string[1000, 10];
+        //-- 0 part number
+        //-- 1 stripped part number
+        //-- 2 price
+        //-- 3 qty
+        //-- 4 panel type
+
+        //for (lp = 0; lp <= swCounter; lp++)
+        //{
+
+
+      
+
+
+      if (dtCacheMaster.Rows.Count > 0)
+        {
+            foreach (DataRow myControlRow in dtCacheMaster.Rows)
+            {
+
+                controlRowCounter++;
+                showthisRow = false;
+
+                if (myControlRow["CurrentSearchMatch"] != DBNull.Value)
+                {
+                    if (myControlRow["CurrentSearchMatch"].ToString() != string.Empty)
+                    {
+                        showthisRow = true;
+                        strSearchList += myControlRow["CurrentSearchMatch"] + " ";
+                        strThisSearch = myControlRow["CurrentSearchMatch"].ToString();
+                    }
+                }
+                if (myControlRow["cur_QTY_ORDERED"] != DBNull.Value)
+                {
+                    if ((int)myControlRow["cur_QTY_ORDERED"] > 0)
+                    {
+                        showthisRow = true;
+                    }
+                }
+
+
+                intCurRow = controlRowCounter;
+                intCurRow = findJPNRow(controlRowCounter, dtCacheMaster);
+                strThisPN = dtCacheMaster.Rows[intCurRow]["pmast_PN_STRIPPED"].ToString();
+
+
+
+
+
+
+                if (intCurRow > -1 && showthisRow)
+                {
+
+                    strPartNumber = dtCacheMaster.Rows[intCurRow]["pmast_PN"].ToString();
+                    strOEMPartNumber = dtCacheMaster.Rows[intCurRow]["pmast_ALT_PN"].ToString();
+                    strDescription = dtCacheMaster.Rows[intCurRow]["pmast_DESCRIPTION"].ToString();
+                    strLinkID = dtCacheMaster.Rows[intCurRow]["pmast_PN"].ToString();
+
+                    if (dtCacheMaster.Rows[intCurRow]["pmast_P_IFC_AUTO_KEY"] != DBNull.Value)
+                    {
+                        intIFCKey = int.Parse(dtCacheMaster.Rows[intCurRow]["pmast_P_IFC_AUTO_KEY"].ToString());
+                    }
+                    //---- key 1 M for PMA key 4 Y for OEM For Sale
+
+
+                    decCost = (decimal)dtCacheMaster.Rows[intCurRow]["calc_SELL_PRICE"];
+                    intQtyOrdered = (int)dtCacheMaster.Rows[intCurRow]["cur_QTY_ORDERED"];
+                    decExt = decCost * intQtyOrdered;
+
+                    intAvl = (int)dtCacheMaster.Rows[intCurRow]["calc_QTY_AVAILABLE"];
+                    intBO = intAvl - intQtyOrdered;
+
+
+
+                    intPartKey = int.Parse(dtCacheMaster.Rows[intCurRow]["pmast_P_PNM_AUTO_KEY"].ToString());
+                    intStockCetegoryKey = int.Parse(dtCacheMaster.Rows[intCurRow]["pmast_P_STC_AUTO_KEY"].ToString());
+                    intILSKey = -1;
+                    if (dtCacheMaster.Rows[intCurRow]["pmast_P_IFC_AUTO_KEY"] != DBNull.Value)
+                    {
+                        intILSKey = int.Parse(dtCacheMaster.Rows[intCurRow]["pmast_P_IFC_AUTO_KEY"].ToString());
+                    }
+
+                    strImage = GenUtils.findImageLink(intCurRow, dtCacheMaster);
+
+                    if (PartNumberOnScreen(strPartNumber, dtCacheMaster.Rows[intCurRow]["pmast_PN_STRIPPED"].ToString(), decCost.ToString(), intQtyOrdered.ToString(), "SingleMatch", strPlacedPartNumbers) == -1)
+                    {
+                        tmp += OpenPod(string.Empty, string.Empty);
+
+                        //searchWords[lp, 3] = "SingleMatch";
+                        //logSearchWordUsed(strPartNumber, "SingleMatch", swCounter, searchWords);
+
+                        tmp += BuildFullMatchPanel(strPartNumber, strOEMPartNumber, strDescription, decCost, intQtyOrdered, decExt, intAvl, intBO, strImage, strLinkID, BuildstrDebug(intCurRow));
+
+
+
+                        intNHAThisSingleMatch = 0;
+                        blnNHAshowMore = false;
+
+                    
+                        int intOEMMatchRow;
+
+
+
+                
+                        //********************************* OEM Rows
+                        strTemp = strOEMPartNumber.Split(',');
+                        intOEMMatchRow = FindOEMItems(strTemp[0], dtCacheMaster);
+
+                        if (intOEMMatchRow > -1)
+                        {
+                            strPartNumber = dtCacheMaster.Rows[intOEMMatchRow]["pmast_PN"].ToString();
+                            strDescription = dtCacheMaster.Rows[intOEMMatchRow]["pmast_DESCRIPTION"].ToString();
+                            strLinkID = dtCacheMaster.Rows[intOEMMatchRow]["pmast_PN"].ToString();
+                            //intIFCKey = int.Parse(dtCacheMaster.Rows[intOEMMatchRow]["pmast_P_IFC_AUTO_KEY"].ToString());
+                            //---- key 1 M for PMA key 4 Y for OEM For Sale
+
+                            intQtyOrdered = (int)dtCacheMaster.Rows[intOEMMatchRow]["cur_QTY_ORDERED"];
+
+                            decCost = (decimal)dtCacheMaster.Rows[intOEMMatchRow]["calc_SELL_PRICE"];
+
+
+                            tmp += addLabelBar("OEM Part");
+                            logSearchWordUsed(strPartNumber, "OEM", swCounter, searchWords);
+                            tmp += BuildOEMPanel(strPartNumber, strDescription, intQtyOrdered, decCost, intAvl, strLinkID, BuildstrDebug(intOEMMatchRow));
+                          
+                        }
+
+
+
+  
+
+
+
+
+
+
+
+                        // ***************************************** NHA ROWS
+
+
+                        string strNHAPartNumber, strNHADescription, strNHAAssembly, intNHAQtyPerAssembly, strATAChapter;
+                        Decimal decNHACost = 0m;
+
+                        System.Data.DataTable dtThisNHA = null;
+                        dtThisNHA = GenUtils.FindNHAItems(strPartNumber, strOEMPartNumber);
+
+                        if (blnshowDebuggerOutput)
+                            PrintTableOrView(dtThisNHA, "NHA Table");
+                        bool blnNHATableOpened = false;
+                        if (dtThisNHA != null)
+                        {
+                            if (dtThisNHA.Rows.Count > 0)
+                            {
+                                string strLastNHA = dtThisNHA.Rows[0]["NHA"].ToString();
+                                strATAChapter = dtThisNHA.Rows[0]["ATAChapter"].ToString();
+
+                                foreach (DataRow mynhaRow in dtThisNHA.Rows)
+                                {
+                                    strNHAPartNumber = mynhaRow["JPEPN"].ToString();
+                                    strNHAAssembly = mynhaRow["NHA"].ToString();
+                                    strNHADescription = mynhaRow["Description"].ToString();
+                                    intNHAQtyPerAssembly = mynhaRow["PartsPerNHA"].ToString();
+
+                                    nhaRowMatch = GenUtils.FindRowforStrippedPartNumber(GenUtils.MakeUCaseNumChar(strNHAPartNumber), dtCacheMaster);
+
+                                    intQtyOrdered = (int)dtCacheMaster.Rows[nhaRowMatch]["cur_QTY_ORDERED"];
+
+
+                                    decNHACost = (decimal)dtCacheMaster.Rows[nhaRowMatch]["calc_SELL_PRICE"];
+
+                                    if ((PartNumberOnScreen(strNHAPartNumber, "", decNHACost.ToString(), intQtyOrdered.ToString(), "NHA", strPlacedPartNumbers) == -1) && decNHACost > 0)
+                                    {
+                                        if (intNHAThisSingleMatch <= intShowNHARows)
+                                        {
+                                            if (!blnNHATableOpened)
+                                            {
+                                                tmp += addLabelBar(" <a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'NHA|" + strLastNHA + "|" + MySessionId + "', event);" + (char)34 + "  onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Associated Parts - NHA: " + strLastNHA + "</a>");
+                                                tmp += openNHATable();
+                                                blnNHATableOpened = true;
+                                            }
+                                            if (strNHAAssembly != strLastNHA)
+                                            {
+                                                tmp += closeNHATable();
+                                                tmp += addLabelBar("<a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'NHA|" + strNHAAssembly + "|" + MySessionId + "', event);" + (char)34 + " onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className='SBpodTitleBarMOMut';" + (char)34 + ">Associated Parts - NHA: " + strNHAAssembly + "</a>");
+                                                tmp += openNHATable();
+                                            }
+                                            strLastNHA = strNHAAssembly;
+
+                                            //logSearchWordUsed(strNHAPartNumber, "NHA", swCounter, searchWords);
+
+                                            tmp += BuildAssociatedLineItem(strNHAPartNumber, strNHADescription, decNHACost, 0, strNHAPartNumber, BuildstrDebug(nhaRowMatch));
+
+                                            intNHAThisSingleMatch++;
+
+                                            //Debug.WriteLine("NHA" + strNHAPartNumber);
+
+                                        }
+                                        else if (!blnNHAshowMore)//-- place a show more row
+                                        {
+                                            blnNHAshowMore = true;
+                                            tmp += BuildNHAShowMore(strNHAAssembly);
+                                        }
+                                    }
+
+                                }
+                                if (blnNHATableOpened)
+                                    tmp += closeNHATable();
+                            }
+                            
+                        }
+                    }
+                    tmp += closePod();
+                  }
+                    
+                }
+        }
+          else
+          {
+              tmp += OpenPod(string.Empty, string.Empty);
+              tmp += "No Items Found";
+              tmp += closePod();
+          }
+
+
+   
+
+
+        //********************************************************** Multi Match Section
+        string tmpMulti = string.Empty;
+        string tmpNoMatch = string.Empty;
+        string strThisSearchItem = string.Empty;
+        string strThisAssigned = string.Empty;
+        bool blnPartialMatchFound = false;
+        int intThisSearchLength = 0;
+        int intdataRowCounter = 0;
+        string strThisPartNumberStripped = string.Empty;
+        string[] strNoMatches = new string[1000];
+        int intNoMatchCounter = -1;
+        Hashtable MultiMatch = new Hashtable();
+        
+        
+        
+        for (lp = 0; lp <= swCounter; lp++)
+        {
+            strThisSearchItem = GenUtils.MakeUCaseNumChar(searchWords[lp, 0]);
+            strThisAssigned = searchWords[lp, 3];
+            intThisSearchLength = strThisSearchItem.Length;
+
+            //Debug.WriteLine("---" + strThisSearchItem + "--" + strThisAssigned );
+
+            if (intThisSearchLength > 0 && (strThisAssigned == string.Empty || strThisAssigned == null))
+            {
+                if (strThisAssigned == null && dtCacheMaster != null)
+                {
+                    blnPartialMatchFound = false;
+                    if (dtCacheMaster.Rows.Count > 0)
+                    {
+                        intdataRowCounter = -1;
+                        foreach (DataRow myfinalRow in dtCacheMaster.Rows)
+                        {
+                            intdataRowCounter++;
+                            strThisPartNumberStripped = myfinalRow["pmast_PN_STRIPPED"].ToString();
+                            //Debug.WriteLine("--------" + strThisPartNumberStripped);
+
+                            if (strThisPartNumberStripped.Length >= intThisSearchLength)
+                            {
+                                decCost = (decimal)myfinalRow["calc_SELL_PRICE"];
+
+                                if (strThisPartNumberStripped.Substring(0, intThisSearchLength) == strThisSearchItem && (PartNumberOnScreen(strThisPartNumberStripped, "", "0", "0", "MULTI", strPlacedPartNumbers) == -1) && decCost > 0 )
+                                {
+                                    //if (myfinalRow["CurrentSearchMatch"].ToString() !=  string.Empty)
+                                    //{
+
+                                    //}
+                                    //else
+                                    //{
+                                    //                                        //---- add to partial Patch Hash
+                                    //MultiMatch[strThisSearchItem] += intdataRowCounter.ToString() + ",";
+                                    //myfinalRow["CurrentSearchMatch"] = "MULTI:" + strThisPartNumberStripped;
+
+                                    ////Debug.WriteLine("MultiMatch" + strThisSearchItem);
+
+                                    ////MultiMatch.Add(strThisSearchItem, intdataRowCounter.ToString() + ",");
+                                    //blnPartialMatchFound = true;
+                                    ////break;
+
+                                    //}
+
+                                    //---- add to partial Patch Hash
+                                    MultiMatch[strThisSearchItem] += intdataRowCounter.ToString() + ",";
+                                    myfinalRow["CurrentSearchMatch"] = "MULTI:" + strThisPartNumberStripped;
+
+                                    //Debug.WriteLine("MultiMatch" + strThisSearchItem);
+
+                                    //MultiMatch.Add(strThisSearchItem, intdataRowCounter.ToString() + ",");
+                                    blnPartialMatchFound = true;
+                                    //break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                string strThisValue = string.Empty;
+                int intThisPartsRow = -1;
+                decimal decListPrice = 0m;
+
+                foreach (string key in MultiMatch.Keys)
+                {
+                    strThisValue = MultiMatch[key].ToString();
+                    string[] ntemp = strThisValue.Split(',');
+
+                    //------ add a multiple match pod
+                    tmpMulti += OpenPod("multi", key);
+
+                    for (int tlp = 0; tlp <= ntemp.GetUpperBound(0); tlp++)
+                    {
+                        if (ntemp[tlp] != string.Empty)
+                        {
+                            intThisPartsRow = int.Parse(ntemp[tlp].ToString());
+                            decListPrice = decimal.Parse(dtCacheMaster.Rows[intThisPartsRow]["pmast_LIST_PRICE"].ToString());
+                            intPartKey = int.Parse(dtCacheMaster.Rows[intThisPartsRow]["pmast_P_PNM_AUTO_KEY"].ToString());
+
+
+
+                            intQtyOrdered = (int)dtCacheMaster.Rows[intThisPartsRow]["cur_QTY_ORDERED"];
+
+ 
+                            decCost = (decimal)dtCacheMaster.Rows[intThisPartsRow]["calc_SELL_PRICE"];
+
+
+                            strImage = GenUtils.findImageLink(intThisPartsRow, dtCacheMaster);
+
+
+
+                            tmpMulti += BuildMultiMatchPanel(dtCacheMaster.Rows[intThisPartsRow]["pmast_PN"].ToString(), dtCacheMaster.Rows[intThisPartsRow]["pmast_Description"].ToString(), decCost, 0, strImage, dtCacheMaster.Rows[intThisPartsRow]["pmast_PN"].ToString(), BuildstrDebug(intThisPartsRow));
+                        }
+                    }
+
+                    tmpMulti += closePod();
+                    //Debug.WriteLine(key + "--->" + MultiMatch[key]);
+                }
+                if (!blnPartialMatchFound)
+                {
+                   if(PartNumberOnScreen(strThisSearchItem, "", "0", "0", "NOMATCH", strPlacedPartNumbers) == -1)
+                    {
+                    strNoMatches[++intNoMatchCounter] = strThisSearchItem;
+                    }
+                }
+            }
+        }
+
+        //-------------------- Now lets go through the search table and
+        // 1 -- Locate the partial matches
+
+        if (MultiMatch.Count > 0)
+        {
+            tmp += tmpMulti;
+        }
+
+        // 2 ---- add the no matches
+        if (intNoMatchCounter > -1)
+        {
+            tmp += BuildNoMatchPanel(strNoMatches, intNoMatchCounter);
+        }
+
+
+
+        //------------------------- Nothing Indicated
+        if (dtCacheMaster.Rows.Count == 0 && MultiMatch.Count == 0 && intNoMatchCounter == 0)
+        {
+            tmp += OpenPod(string.Empty, string.Empty);
+            tmp += "<tr><td>It does not appear that you entered any items to search for.</td></tr>";
+            tmp += closePod();
+
+        }
+
+
+
+
+        //---------------------- Close the main Viewport table and add footer
+        tmp += "<!-- End  Table Viewport Area  -->";
+        tmp += "</td><td class='SBViewPortBorderTD'>";
+        tmp += "</td></tr>";
+        tmp += "<tr><td class='SBViewPortFooterTD' colspan='3'>";
+        tmp += "Some cool text here that tells the user how to use the video game...";
+        tmp += "</td></tr></table>";
+
+        return tmp;
+    }
+
+
+
+    protected string BuildstrDebug(int thisCacheRow)
+    {
+        string temp = string.Empty;
+        if (!blnShowPanelDeubggerString)
+        {
+            return string.Empty;
+        }
+
+        temp = "<br><font color='blue' size = '-1'>[Avl: " + dtCacheMaster.Rows[thisCacheRow]["calc_QTY_AVAILABLE"] + " List: " + dtCacheMaster.Rows[thisCacheRow]["pmast_LIST_PRICE"] + " Cntrct: " + dtCacheMaster.Rows[thisCacheRow]["calc_CUSTOM_UNIT_PRICE"] + "]</font>";
+
+
+
+        return temp;
+    }
+
+
+    protected int FindOEMItems(string strJPEPartNumber, DataTable dtCacheMaster)
+    {
+
+        int intLclMatchRow = -1;
+        int intRowCounter = -1;
+
+        if (strJPEPartNumber.Trim() == string.Empty)
+        {
+            return -1;
+        }
+       
+        foreach (DataRow myPNRow in dtCacheMaster.Rows)
+        {
+            intRowCounter++;
+            if (strJPEPartNumber == myPNRow["pmast_PN"].ToString())
+            {
+                intLclMatchRow = intRowCounter;
+                break;
+            }
+        }  
+        return intLclMatchRow;
+    }
+
+
+
+
+    //******************************************  Determine the Qty Available
+    protected void ApplyQtyAvailable()
+    {
+
+        //select PNM_AUTO_KEY, UNIT_PRICE, CMP_AUTO_KEY, LOC_AUTO_KEY, WHS_AUTO_KEY, QTY_OH, QTY_REC, QTY_INVOICED, QTY_ADJ, QTY_RESERVED, QTY_AVAILABLE, QTY_RESERVED, QTY_SCRAPPED from STOCK where PNM_AUTO_KEY = 1768
+
+        // 1768 is 3234752JP-3
+
+
+
+
+    }
+
+
+
+    protected void ApplyCustomPricing(int intCustKey)
+    {
+
+
+        string queryString = "Select  PNM_AUTO_KEY, DISCOUNT, LIST_PRICE, PRICE_TYPE, UNIT_PRICE, FOREIGN_LIST_PRICE, FOREIGN_UNIT_PRICE, REMARKS from Prices where CMP_AUTO_KEY = 156 ";
+
+
+        //----- 156 is Delta
+        try
+        {
+            JetServerHost.MyWCFServiceClient client = new JetServerHost.MyWCFServiceClient();
+            dtCompany = client.QuantumLookup(queryString, "83265784305c145r4c3crtb40b0tcb43tc");
+            client.Close();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+
+        if (blnshowDebuggerOutput)
+            PrintTableOrView(dtCompany, "dtCompany");
+
+    }
+
+
+
+}
+
+
+

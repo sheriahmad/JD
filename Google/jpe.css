@@ -1,0 +1,270 @@
+﻿/* 0 ** General Styles */
+body
+{
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    font: 10pt verdana;
+    text-align: center;
+}
+a:link, a:visited
+{
+    color: #666;
+    text-decoration: underline;
+}
+a:hover, a:active
+{
+    color: #666;
+    text-decoration: underline;
+}
+a img
+{
+    border: none;
+}
+p, h3
+{
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+/* end 0 ** General Styles */
+
+/* 1 ** Master layout */
+.WS_Header_div
+{
+    background-image: url(../images/background_tile.png);
+    background-repeat: repeat-x;
+    text-align: center;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 100%;
+    height: 150px;
+}
+
+.WS_LeftNavBar_Wrapper_div
+{
+    /* background-image:url(../../images/menuDrawing.png); */ /*background-image:url(../../images/Website Sample ii small.png); */
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+    background-color: #ffffff;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 960px;
+    position: relative;
+    top: -20px;
+    text-align: center; /*  height:600px; */ /* border:solid 1px blue; */
+}
+
+.WS_LeftNavBar_MainMenu_div
+{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    text-align: left;
+    line-height: 30px; /* border:solid 1px green; */
+    width: 140px;
+}
+
+.WS_LeftNavBar_SubMenu_div
+{
+    position: absolute;
+    top: 0px;
+    left: 100px; /* border:solid 1px red; */
+}
+
+
+.WS_SubMenu_about_Container_div
+{
+    position: absolute;
+    top: 10px;
+    left: 0px;
+    line-height: 15px;
+    text-align: left;
+    display: none;
+    padding-top: 30px;
+    padding-left: 40px;
+    padding-bottom: 20px; /* border:solid 1px black; */
+}
+
+
+.WS_SubMenu_products_Container_div
+{
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    line-height: 15px;
+    text-align: left;
+    display: none;
+    padding-top: 30px;
+    padding-left: 40px;
+    padding-bottom: 20px; /* border:solid 1px yellow; */
+}
+
+.WS_SubMenu_contact_Container_div
+{
+    position: absolute;
+    top: 70px;
+    left: 0px;
+    line-height: 15px;
+    text-align: left;
+    display: none;
+    padding-top: 30px;
+    padding-left: 40px;
+    padding-bottom: 20px; /* border:solid 1px red; */
+}
+
+.WS_ViewPort_div
+{
+    position: absolute;
+    top: 5px;
+    left: 300px; /* border:solid 1px purple; */
+}
+
+.WS_Footer_div
+{
+    position: absolute;
+    bottom: -70px;
+    left: -296px;
+    width: 961px;
+    border-top: 1px solid #242e6a;
+    color: #242e6a;
+    text-align: right;
+    font-size: x-small;
+    font-family: Arial, Sans-Serif;
+}
+
+/* end 1 ** Master layout */
+
+/* 2 ** Page Content Styles */
+.pageHeaderDiv
+{
+    width: 660px;
+    height: 120px;
+    margin: auto;
+    opacity: 0.9;
+    -moz-opacity: 0.9;
+    -khtml-opacity: 0.9;
+    filter: alpha(opacity=90);
+    progid: DXImageTransform.Microsoft.Alpha(opacity=90);
+}
+.pageBodyPar1
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 13px;
+    font-weight: normal;
+    color: #666666;
+    text-align: left;
+    padding-top: 30px;
+}
+.pageBody
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 15px;
+    font-weight: normal;
+    color: #666666;
+    text-align: left;
+    padding-top: 10px;
+}
+.pageHeadlinesH3
+{
+    padding-top: 30px;
+    font-family: Gill Sans MT, Verdana;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+    text-align: left;
+}
+.LetterSig
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 13px;
+    font-weight: normal;
+    color: #666666;
+    text-align: left;
+    line-height: 20px;
+    padding-top: 10px;
+}
+
+.paragraphHeaderH4
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+    text-align: left;
+    padding-top: 10px;
+    line-height: 14px;
+    outline: 1px solid #999;
+    padding: 1.5em 1em 1.5em 1em;
+}
+.newsHeadH4
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+    text-align: left;
+    padding-top: 10px;
+    line-height: 14px;
+}
+
+.newsStory
+{
+    font-family: Gill Sans MT, Verdana;
+    font-size: 12px;
+    font-weight: normal;
+    color: #666666;
+    text-align: left;
+}
+.contact
+{
+    margin-top: 0;
+    margin-bottom: .5em;
+    text-align: left;
+}
+.contact h2
+{
+    color: #666;
+    font-size: 11pt;
+    font-weight: 900;
+    margin: 2.5em;
+}
+.contact dl
+{
+    margin-bottom: 50px;
+    color: #000;
+}
+
+.contact dl dt
+{
+    float: left;
+    margin-right: 1em;
+    width: 5em;
+}
+
+.contact dl dd
+{
+    margin: 2px 0;
+}
+.address
+{
+    color: #666;
+    margin: 1.5em 0 1em 0;
+}
+.address:first-line
+{
+    font-weight: 900;
+}
+.contact a:link, .contact a:visited
+{
+    color: #d41421;
+    text-decoration: none;
+}
+.contact a:hover, .contact a:active
+{
+    color: red;
+    text-decoration: underline;
+}
+/* end 2 ** Page Content Styles */
+

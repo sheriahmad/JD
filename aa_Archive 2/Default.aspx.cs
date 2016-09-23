@@ -1,0 +1,186 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+public partial class _Default : System.Web.UI.Page 
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        JPERootWiz(sender, e);
+
+
+    }
+
+    protected void JPERootWiz(object sender, EventArgs e)
+    {
+        string thisServer = Request.ServerVariables["SERVER_NAME"];
+        string thisReferer = Request.ServerVariables["HTTP_REFERER"];
+        string thisURL = Request.ServerVariables["URL"];
+        //bool blnDebugRootWiz = true;
+
+        bool blnWAPDetected = false;
+
+        
+        if (Request.ServerVariables["HTTP_USER_AGENT"].IndexOf("wap") > 0 || Request.ServerVariables["HTTP_USER_AGENT"].IndexOf("7110") > 0 ||Request.ServerVariables["HTTP_ACCEPT"].IndexOf("wml") > 0  || Request.ServerVariables["HTTP_ACCEPT"].IndexOf("wap") > 0 || Request.ServerVariables["HTTP_ACCEPT"].IndexOf("text/vnd") > 0)
+        {
+            blnWAPDetected = true;
+        }
+
+        //bool blnredirected = false;
+        string strThisVanity = string.Empty;
+        string strThisDomain = string.Empty;
+        bool blnIsLeftVanityNumber = false;
+
+        string strWhereIWantedtoGo = string.Empty;
+
+
+
+        string[] strtmpRW = thisServer.Split('.');
+        if (strtmpRW.GetUpperBound(0) == 3 && strtmpRW[0].ToLower() == "www")
+        {
+            strThisVanity = strtmpRW[1];
+            strThisDomain = strtmpRW[2] + "." + strtmpRW[3];
+        }
+        else if (strtmpRW.GetUpperBound(0) == 2)
+        {
+             strThisVanity = strtmpRW[0];
+             strThisDomain = strtmpRW[1] + "." + strtmpRW[2];
+        }
+        else if (strtmpRW.GetUpperBound(0) == 1)
+        {
+             strThisDomain = strtmpRW[0] + "." + strtmpRW[1];
+        }
+
+        if (strThisVanity.Length > 1)
+        {
+            if(IsNumber(strThisVanity.Substring(1)))
+            {
+            blnIsLeftVanityNumber = true;
+            }
+        }
+
+
+        if (strThisDomain.IndexOf("/") > 0)
+        {
+            strWhereIWantedtoGo = strThisDomain.Substring(strThisDomain.IndexOf("/") + 1);
+            strThisDomain = strThisDomain.Substring(0, strThisDomain.IndexOf("/"));
+           
+
+        }
+
+        //if (blnDebugRootWiz)
+        //{
+        //Debug.WriteLine("strThisVantiy: " + strThisVanity);
+        //Debug.WriteLine("strThisDomain: " + strThisDomain);
+
+        //lblDeBug.Text += "strThisVantiy: " + strThisVanity;
+        //lblDeBug.Text += "strThisDomain: " + strThisDomain;
+
+
+        //}
+
+
+
+
+
+
+
+
+
+
+
+
+        //************************************** Redirection for WAP
+        if (blnWAPDetected)
+        {
+            if (strThisDomain.ToLower().IndexOf("snapnav") > 0)
+            {
+                switch (Request.QueryString["svc"].ToString().ToLower())
+                {
+                    case "example1":
+                        Response.Redirect("http://snapnav.com/SSP/SaaS/HotTimer/wml.aspx?cl=" + Request.QueryString["cl"]);
+                        //blnredirected = true;
+                        break;
+
+                }
+            }
+            else //----- not snapnav
+            {
+                if (blnIsLeftVanityNumber)
+                {
+                    Response.Redirect("wml.aspx?ID=" + strThisVanity + "");
+                    //blnredirected = true;
+                }
+                else
+                {
+                    Response.Redirect("wml.aspx");
+                    //blnredirected = true;
+                }
+            }
+        }
+        else //******************************************* redirection for web navigation
+        {
+
+            switch (strThisDomain.ToLower())
+            {
+                case "jpesmartbuyer.com":
+                    Response.Redirect("http://JPESmartBuyer.com/ecom_ProdSearch.aspx");
+                    break;
+                case "myi7.com":
+                    Response.Write("-----" + strThisDomain);
+                    Response.Redirect("http://MyI7.com/");
+                    break;
+                case "jetpartsengineering.com":
+                    if (strThisVanity.ToLower() == "www")
+                    {
+                        //Response.Redirect("http://www.JetPartsEngineering.com/" + strWhereIWantedtoGo);
+                    }
+                    else if (strThisVanity == "jetserve1")
+                    {
+                        Response.Redirect("http://JetPartsEngineering.com/jserve1/" + strWhereIWantedtoGo);
+                    }
+                    else if (strThisVanity == string.Empty)
+                    {
+                        //Response.Redirect("http://JetPartsEngineering.com/" + strWhereIWantedtoGo);
+                    }
+                    //Response.Redirect("http://JetPartsEnginEering.com/");
+                    break;
+                default:
+                    if (strThisVanity != string.Empty && strThisVanity.ToLower() != "www")
+                    {
+                        if (strThisVanity == "jetserve1")
+                        {
+                            Response.Redirect("http://JetPartsEngineering.com/jserve1/" + strWhereIWantedtoGo);
+                        }
+                        //------ insert code here to redirect based on the vanity
+                    }
+                       
+                    break;
+            }
+        }
+
+    }
+
+
+
+
+    protected bool IsNumber(string iNumber)
+    {
+        int myint;
+        bool isNumber = true;
+        try
+        {
+            myint = int.Parse(iNumber);
+        }
+        catch
+        {
+            isNumber = false;
+        }
+        return isNumber;
+
+    }
+
+
+
+}

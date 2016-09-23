@@ -1,0 +1,35 @@
+﻿.login_titles p 
+	{
+	font-size: 7pt;
+	}
+	
+.login_controls 
+	{
+	font-size: 7pt;
+	}
+
+.accounts_titles 
+	{
+	font-size: 7pt;
+	}
+	
+.accounts_controls 
+	{
+	font-size: 7pt;
+	}
+
+
+.ecomLoginTable
+{
+	width:400px;
+}
+
+.ecomTextBoxes
+{
+}
+
+.tableRule
+{
+	width:95%;
+	color:#cccccc;
+}

@@ -1,0 +1,51 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="JetParts.Web.Com.Code.Site" %>
+<%@ Register TagPrefix="jpe" Src="~/Code/SiteMenu.ascx" TagName="SiteMenu" %>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>Jet Parts Engineering - Your PMA Solution</title>
+    <link rel="Stylesheet" type="text/css" href="../css/jpe.css" />
+
+    <script type="text/javascript"><!--
+        function JPEImageSwap(imageID, imageFile) {
+            var myImage = document.getElementById(imageID);
+            myImage.src = imageFile;
+        }//-->
+    </script>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div>
+        <div id="Header" class="WS_Header_div">
+            <img usemap="#headerMap" src="images/background_center.png" alt="" border="0" />
+            <map name="headerMap" id="headerMap">
+                <area shape="rect" alt="alt" coords="64,63,289,113" href="default.aspx" title="JetPartsEngineering.com" />
+                <area shape="rect" alt="Your PMA Solution" coords="851,83,1037,119" href="about.aspx"
+                    title="About Jet Parts Engineering" />
+            </map>
+        </div>
+        <center>
+            <div id="leftNavBar" class="WS_LeftNavBar_Wrapper_div">
+                <jpe:SiteMenu ID="menu" runat="server" />
+                <div id="ViewPortDiv" class="WS_ViewPort_div">
+                    <asp:ContentPlaceHolder ID="ViewPortContent" runat="server">
+                    </asp:ContentPlaceHolder>
+                    <%--  <br /><br />
+        
+       Session Variables  <% =Page.Session["MMenu"] %> - <% =Page.Session["SMenu"] %>--%>
+                    <input type="hidden" name="Mmenu" id="Mmenu" value="<% =Page.Session["MMenu"] %>" />
+                    <input type="hidden" name="Smenu" id="Smenu" value="<% =Page.Session["SMenu"] %>" />
+                    <div id="footer_new_div" class="WS_Footer_div">
+                        &copy;
+                        <%= DateTime.Now.Year.ToString() %>
+                        Jet Parts Engineering.
+                    </div>
+                </div>
+            </div>
+        </center>
+    </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,779 @@
+﻿----------------------------------------------------------------------------------------------
+recall requests for quotes
+
+SELECT COMPANIES.COMPANY_NAME, CQ_HEADER.CQ_NUMBER, CQ_HEADER.COMPANY_REF_NUMBER, CQ_HEADER.ENTRY_DATE, CQ_HEADER.EXPIRATION_DATE, PARTS_MASTER.PN, PARTS_MASTER.DESCRIPTION, CQ_DETAIL.ITEM_NUMBER, CQ_DETAIL.QTY_QUOTED, CQ_DETAIL.CUSTOMER_PRICE, CQ_STATUS.DESCRIPTION
+FROM QCTL.COMPANIES COMPANIES, QCTL.CQ_DETAIL CQ_DETAIL, QCTL.CQ_HEADER CQ_HEADER, QCTL.CQ_STATUS CQ_STATUS, QCTL.PARTS_MASTER PARTS_MASTER
+WHERE COMPANIES.CMP_AUTO_KEY = CQ_HEADER.CMP_AUTO_KEY AND CQ_DETAIL.CQH_AUTO_KEY = CQ_HEADER.CQH_AUTO_KEY AND PARTS_MASTER.PNM_AUTO_KEY = CQ_DETAIL.PNM_AUTO_KEY AND CQ_STATUS.CQS_AUTO_KEY = CQ_HEADER.CQS_AUTO_KEY
+
+SELECT COMPANIES.COMPANY_NAME, CQ_HEADER.CQ_NUMBER, CQ_HEADER.COMPANY_REF_NUMBER, CQ_HEADER.ENTRY_DATE, CQ_HEADER.EXPIRATION_DATE, PARTS_MASTER.PN, PARTS_MASTER.DESCRIPTION, CQ_DETAIL.ITEM_NUMBER, CQ_DETAIL.QTY_QUOTED, CQ_DETAIL.CUSTOMER_PRICE, CQ_STATUS.DESCRIPTION
+FROM QCTL.COMPANIES COMPANIES, QCTL.CQ_DETAIL CQ_DETAIL, QCTL.CQ_HEADER CQ_HEADER, QCTL.CQ_STATUS CQ_STATUS, QCTL.PARTS_MASTER PARTS_MASTER
+WHERE COMPANIES.CMP_AUTO_KEY = CQ_HEADER.CMP_AUTO_KEY AND CQ_DETAIL.CQH_AUTO_KEY = CQ_HEADER.CQH_AUTO_KEY AND PARTS_MASTER.PNM_AUTO_KEY = CQ_DETAIL.PNM_AUTO_KEY AND CQ_STATUS.CQS_AUTO_KEY = CQ_HEADER.CQS_AUTO_KEY
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------
+
+OEM Part Numbers Missing JPE Alts
+Select p.PN /*, ALT.PNM_AUTO_KEY, P2.PN, p.STC_AUTO_KEY */
+
+From PARTS_MASTER p 
+
+
+LEFT OUTER JOIN QCTL.ALTERNATES_PARTS_MASTER ALT ON P.PNM_AUTO_KEY = ALT.PNM_AUTO_KEY 
+
+
+FULL JOIN QCTL.PARTS_MASTER P2 ON P2.PNM_AUTO_KEY = ALT.ALT_PNM_AUTO_KEY
+
+WHERE (p.STC_AUTO_KEY = '3' OR p.STC_AUTO_KEY = '10') AND ALT.PNM_AUTO_KEY  IS NULL
+  ----
+
+Select p.PN /*, ALT.PNM_AUTO_KEY, P2.PN, p.STC_AUTO_KEY */
+
+From PARTS_MASTER p 
+
+
+LEFT OUTER JOIN QCTL.ALTERNATES_PARTS_MASTER ALT ON P.PNM_AUTO_KEY = ALT.PNM_AUTO_KEY 
+
+
+FULL JOIN QCTL.PARTS_MASTER P2 ON P2.PNM_AUTO_KEY = ALT.ALT_PNM_AUTO_KEY
+
+WHERE (p.STC_AUTO_KEY = '12') AND ALT.PNM_AUTO_KEY  IS NULL
+
+
+Select p.PN , ALT.PNM_AUTO_KEY, P2.PN, p.STC_AUTO_KEY,  P.IFC_AUTO_KEY
+
+From PARTS_MASTER p 
+
+
+LEFT OUTER JOIN QCTL.ALTERNATES_PARTS_MASTER ALT ON P.PNM_AUTO_KEY = ALT.PNM_AUTO_KEY 
+
+
+FULL JOIN QCTL.PARTS_MASTER P2 ON P2.PNM_AUTO_KEY = ALT.ALT_PNM_AUTO_KEY
+
+WHERE (p.STC_AUTO_KEY = '2' or p.STC_AUTO_KEY = '4'  or p.STC_AUTO_KEY = '6' ) AND (P.IFC_AUTO_KEY = '1' OR P.IFC_AUTO_KEY = '6')
+
+
+------------------------------------------------------------------------------------------
+lookup the custom price for a given company and PNM_AUTO_KEY
+
+ SELECT PNM_AUTO_KEY, UNIT_PRICE FROM PRICES WHERE CMP_AUTO_KEY = 156  AND (  PNM_AUTO_KEY = 2326  ) ORDER BY PNM_AUTO_KEY
+ 
+ COMAIR is 582 CMP_AUTO_KEY
+ DELTA is 156
+ 
+ 
+ 
+ Rolodex 1331 is Comair
+ 
+ 
+ Select CMP_AUTO_KEY, FOREIGN_UNIT_PRICE, SYSUR_AUTO_KEY, FOREIGN_LIST_PRICE, UNIT_PRICE, LIST_PRICE, REMARKS, DISCOUNT, PRICE_LINE, PNM_AUTO_KEY FROM PRICES WHERE CMP_AUTO_KEY = 156
+
+ 
+ --------------------------------------------------------------------------------
+ this retrieves all past orders for a company - exluding borrowed returns
+ used for teh order tracking history panel - 3/30/2010
+ 
+ 
+ SELECT  SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER,
+PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED, SO_DETAIL.SOD_AUTO_KEY, 
+SO_DETAIL.QTY_INVOICED, INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE, 
+INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER   
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, 
+QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS   
+
+WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  
+AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY 
+AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY  
+AND INVC_HEADER.POST_DESC = 'Posted'  
+
+AND SO_DETAIL.PCC_AUTO_KEY != 9
+
+AND ROWNUM <= 1000 
+AND (SO_HEADER.CMP_AUTO_KEY = 156 OR SO_HEADER.CMP_AUTO_KEY = 582)
+ORDER BY SO_HEADER.ENTRY_DATE DESC 
+
+
+
+
+ 
+ 
+ 
+ ----------------------------------------------------------------------------------------
+ recall past orders
+ 
+SELECT  SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER, PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED,   SO_DETAIL.QTY_INVOICED, INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE, INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER   FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS   WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY  AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY  AND INVC_HEADER.POST_DESC = 'Posted'  AND ROWNUM <= 100  AND SO_HEADER.CMP_AUTO_KEY = 582  ORDER BY SO_HEADER.ENTRY_DATE DESC 
+
+
+
+
+
+
+
+
+Select pall.*, n.NHAId, n.ATAChapter, n.PartsPerNHA, nha.NHA 
+
+from Part p 
+AND p.NHAId = n.NHAId
+
+JOIN Part2NHA n ON (n.PartID = p.PartID)
+JOIN Part2NHA nall ON (nall.NHAID = n.NHAId)
+JOIN  Part pall ON (pall.PartID = nall.PartID) 
+JOIN NHA nha ON (nha.NHAID = nall.NHAId) 
+
+WHERE p.JPEPN = '858885JP-3' 
+
+ORDER BY OEMPN
+
+
+
+
+----final workign version
+
+SELECT  SO_HEADER.SOH_AUTO_KEY, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER, 
+PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED, 
+SO_DETAIL.QTY_INVOICED, INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE,
+INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER  
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, 
+QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS  
+
+WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  
+AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY 
+AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY 
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY 
+
+AND ROWNUM <= 25  
+
+AND SO_HEADER.CMP_AUTO_KEY = 582  ORDER BY SO_HEADER.ENTRY_DATE DESC 
+
+SELECT  SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER, PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED,   SO_DETAIL.QTY_INVOICED, INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE, INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER   FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS   WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY  AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY  AND INVC_HEADER.POST_DESC = 'Posted'  AND ROWNUM <= 20  AND SO_HEADER.CMP_AUTO_KEY = 156  ORDER BY SO_HEADER.ENTRY_DATE DESC 
+
+
+
+
+---------------------------------------------------------------------------------------
+parts lookup all parts like %
+
+
+       
+       SELECT p.PN_STRIPPED, p.DESCRIPTION, u.DESCRIPTION as UNIT_OF_MEASURE,
+p.LIST_PRICE, p.QTY_AVAILABLE, s.QTY_AVAILABLE
+
+FROM parts_master p 
+
+JOIN UOM_CODES u on  u.UOM_AUTO_KEY = p.UOM_AUTO_KEY
+
+JOIN STOCK s ON  s.PNM_AUTO_KEY = p.PNM_AUTO_KEY   
+
+WHERE PN_STRIPPED like '749%'
+       
+       
+       
+-----------------------------------------------------------------------------------------
+
+Hold Lines
+
+
+SELECT HOLD_LINE, PN, QTY_CHANGE_DATE, DESCRIPTION, QTY_OH, QTY_ADJ, QTY_REC, QTY_AVAILABLE, QTY_RESERVED, QTY_SCRAPPED, NOTES  from STOCK WHERE pnm_auto_key > 1700 AND pnm_auto_key < 1800
+
+
+
+
+
+----------------------------------------------- Locating all associated parts
+
+
+current version:
+SELECT  U.UOM_AUTO_KEY, P.UOM_AUTO_KEY AS P_UOM_AUTO_KEY, P.PNM_AUTO_KEY AS P_PNM_AUTO_KEY, P.PN, P.PN_STRIPPED, P.DESCRIPTION, ALT.ALT_PNM_AUTO_KEY, P2.PN AS ALT_PN, 
+P2.PN_STRIPPED AS ALT_PN_STRIPPED, P2.DESCRIPTION AS ALT_DESCRIPTION, P2.LIST_PRICE AS ALT_LIST_PRICE, P2.STC_AUTO_KEY AS ALT_STC_AUTO_KEY, 
+P2.QTY_AVAILABLE AS ALT_QTY_AVAILABLE, U.DESCRIPTION AS UNIT_OF_MEASURE, P.IC_UDF_015 AS ECCN, P.STC_AUTO_KEY AS P_STC_AUTO_KEY, P.IFC_AUTO_KEY, 
+P.LIST_PRICE, P.QTY_AVAILABLE, SC.DESCRIPTION AS STOCK_DESC 
+
+FROM parts_master p  
+LEFT OUTER JOIN UOM_CODES u on u.UOM_AUTO_KEY = p.UOM_AUTO_KEY  
+LEFT OUTER JOIN STOCK_CATEGORY_CODES sc ON sc.STC_AUTO_KEY = p.STC_AUTO_KEY  
+LEFT OUTER JOIN QCTL.ALTERNATES_PARTS_MASTER ALT ON ALT.PNM_AUTO_KEY = P.PNM_AUTO_KEY  
+LEFT OUTER JOIN QCTL.PARTS_MASTER P2 ON ALT.ALT_PNM_AUTO_KEY =  P2.PNM_AUTO_KEY 
+
+WHERE (p.PN_STRIPPED like 'SA1027500001%') 
+
+ORDER BY p.PN 
+
+
+
+
+------------- Locate associated images
+Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK  FROM image_list i JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY  WHERE SOURCE_TABLE = 'PARTS_MASTER' AND ( SOURCE_PK =1413  OR  SOURCE_PK =1767  OR  SOURCE_PK =2855 )  ORDER BY p.PN
+
+
+
+
+
+SELECT  U.UOM_AUTO_KEY, P.UOM_AUTO_KEY AS P_UOM_AUTO_KEY, P.PNM_AUTO_KEY AS P_PNM_AUTO_KEY, P.PN,
+P.PN_STRIPPED, P.DESCRIPTION, ALT.ALT_PNM_AUTO_KEY, P2.PN AS ALT_PN, P2.PN_STRIPPED AS ALT_PN_STRIPPED,
+P2.DESCRIPTION AS ALT_DESCRIPTION, P2.LIST_PRICE AS ALT_LIST_PRICE, P2.STC_AUTO_KEY AS ALT_STC_AUTO_KEY,
+P2.QTY_AVAILABLE AS ALT_QTY_AVAILABLE, U.DESCRIPTION AS UNIT_OF_MEASURE, P.IC_UDF_015 AS ECCN, P.STC_AUTO_KEY AS P_STC_AUTO_KEY,
+P.IFC_AUTO_KEY, P.LIST_PRICE, P.QTY_AVAILABLE, SC.DESCRIPTION AS STOCK_DESC, IMG.FILE_NAME AS IMG_FILE_NAME, IMG.FILE_EXT AS IMG_FILE_EXT,
+IPDF.FILE_NAME AS PDF_FILE_NAME, IPDF.FILE_EXT AS PDF_FILE_EXT 
+
+FROM parts_master p
+RIGHT OUTER JOIN UOM_CODES u on u.UOM_AUTO_KEY = p.UOM_AUTO_KEY  
+RIGHT OUTER JOIN STOCK_CATEGORY_CODES sc ON sc.STC_AUTO_KEY = p.STC_AUTO_KEY 
+RIGHT OUTER JOIN QCTL.ALTERNATES_PARTS_MASTER ALT ON P.PNM_AUTO_KEY = ALT.PNM_AUTO_KEY 
+RIGHT OUTER JOIN QCTL.PARTS_MASTER P2 ON P2.PNM_AUTO_KEY = ALT.ALT_PNM_AUTO_KEY 
+LEFT OUTER JOIN QCTL.IMAGE_LIST IMG ON IMG.SOURCE_PK = P.PNM_AUTO_KEY
+LEFT OUTER JOIN  QCTL.IMAGE_LIST IPDF ON IPDF.SOURCE_PK = P.PNM_AUTO_KEY 
+
+WHERE 
+(p.PN_STRIPPED like '3182887JP1%' OR p.PN_STRIPPED like '2803572JP101%' OR p.PN_STRIPPED like '217353JP1%' OR p.PN_STRIPPED like '106711JP%'
+OR p.PN_STRIPPED like '645133JP2%' OR p.PN_STRIPPED like '214633JP1%' OR p.PN_STRIPPED like '22850915109JP%' OR p.PN_STRIPPED like '3163268JP11%' 
+OR p.PN_STRIPPED like '2793916JP101%' OR p.PN_STRIPPED like '106711%' OR p.PN_STRIPPED like '106712JP%' OR p.PN_STRIPPED like '106712%'
+OR p.PN_STRIPPED like '106722JP%' OR p.PN_STRIPPED like '106722%' OR p.PN_STRIPPED like '106736JP%' OR p.PN_STRIPPED like '106736%'
+OR p.PN_STRIPPED like '107551JP%' OR p.PN_STRIPPED like '107551%' OR p.PN_STRIPPED like '107552JP%' OR p.PN_STRIPPED like '107552%' 
+OR p.PN_STRIPPED like '110968JP%' OR p.PN_STRIPPED like '110968%' OR p.PN_STRIPPED like '113126JP%' OR p.PN_STRIPPED like '113126%' 
+OR p.PN_STRIPPED like '113273JP%' OR p.PN_STRIPPED like '113273%' OR p.PN_STRIPPED like '113306JP1%' OR p.PN_STRIPPED like '1133061%'
+OR p.PN_STRIPPED like '113307JP1%' OR p.PN_STRIPPED like '1133071%' OR p.PN_STRIPPED like '113308JP1%' OR p.PN_STRIPPED like '1133081%' 
+OR p.PN_STRIPPED like '113309JP1%' OR p.PN_STRIPPED like '1133091%' OR p.PN_STRIPPED like '113636JP1%' OR p.PN_STRIPPED like '1136361%') 
+
+AND (p.STC_AUTO_KEY = 2 OR p.STC_AUTO_KEY = 3 OR p.STC_AUTO_KEY = 4 OR p.STC_AUTO_KEY = 6 OR p.STC_AUTO_KEY = 10 OR p.STC_AUTO_KEY = 11 OR p.STC_AUTO_KEY = 12) 
+
+AND ((IMG.SOURCE_TABLE = 'PARTS_MASTER' OR IMG.SOURCE_TABLE IS NULL) AND (LOWER(IMG.FILE_EXT) ='.jpg' OR IMG.FILE_EXT IS NULL)) 
+AND ((IPDF.SOURCE_TABLE = 'PARTS_MASTER' OR IPDF.SOURCE_TABLE IS NULL) AND (LOWER(IPDF.FILE_EXT) ='.pdf' OR IPDF.FILE_EXT IS NULL))  
+
+ORDER BY p.PN
+
+
+----------------------------------------------------------------- Images
+Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK, i.IMC_AUTO_KEY  FROM image_list i JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY  WHERE SOURCE_TABLE = 'PARTS_MASTER' AND ( SOURCE_PK =1561  OR  SOURCE_PK =543  OR  SOURCE_PK =1562  OR  SOURCE_PK =349  OR  SOURCE_PK =1564  OR  SOURCE_PK =414  OR  SOURCE_PK =1569  OR  SOURCE_PK =393  OR  SOURCE_PK =1570  OR  SOURCE_PK =363  OR  SOURCE_PK =1571  OR  SOURCE_PK =341  OR  SOURCE_PK =1572  OR  SOURCE_PK =360  OR  SOURCE_PK =1573  OR  SOURCE_PK =386  OR  SOURCE_PK =1574  OR  SOURCE_PK =544  OR  SOURCE_PK =2976  OR  SOURCE_PK =545  OR  SOURCE_PK =1579  OR  SOURCE_PK =724  OR  SOURCE_PK =1580  OR  SOURCE_PK =735  OR  SOURCE_PK =1587  OR  SOURCE_PK =717  OR  SOURCE_PK =1681  OR  SOURCE_PK =339  OR  SOURCE_PK =1682  OR  SOURCE_PK =354  OR  SOURCE_PK =1683  OR  SOURCE_PK =355  OR  SOURCE_PK =1684  OR  SOURCE_PK =356 )  ORDER BY p.PN
+
+
+Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK, i.IMC_AUTO_KEY  FROM image_list i JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY  WHERE SOURCE_TABLE = 'PARTS_MASTER' AND ( SOURCE_PK =1566  OR  SOURCE_PK =453  OR  SOURCE_PK =1567  OR  SOURCE_PK =723  OR  SOURCE_PK =1568  OR  SOURCE_PK =346 )  ORDER BY p.PN
+
+
+
+Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK, i.IMC_AUTO_KEY 
+
+FROM image_list i 
+
+JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY  
+
+WHERE SOURCE_TABLE = 'PARTS_MASTER' AND ( SOURCE_PK = 544)  ORDER BY p.PN
+
+
+
+-------------------------------------------------------------------------------------
+3/30   Working with image files - located the IMC_AUTO_KEY
+
+Select i.IMAGE_KEY, i.FILE_NAME, i.FILE_EXT, p.PNM_AUTO_KEY, i.SOURCE_PK, i.IMC_AUTO_KEY 
+FROM image_list i 
+JOIN PARTS_MASTER p ON i.SOURCE_PK = p.PNM_AUTO_KEY  
+
+WHERE SOURCE_TABLE = 'PARTS_MASTER' 
+AND ( SOURCE_PK =419  OR  SOURCE_PK =1639  OR  SOURCE_PK =2442  OR  SOURCE_PK =420  OR 
+SOURCE_PK =1521  OR  SOURCE_PK =2444 ) 
+
+AND ( IMC_AUTO_KEY = 2 OR IMC_AUTO_KEY = 113 or IMC_AUTO_KEY = 88)
+
+ORDER BY p.PN
+
+
+
+
+
+
+
+
+
+
+
+*********************************************************************************************
+
+
+
+SELECT   /* COMP.COMPANY_CODE, */ INVC_HEADER.CMP_AUTO_KEY, /* SLSP.SALESPERSON_CODE, SLSP.SALESPERSON_NAME, */ SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, 
+SO_HEADER.COMPANY_REF_NUMBER, 
+PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED,   SO_DETAIL.QTY_INVOICED, 
+INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE, INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER   
+
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, QCTL.SO_DETAIL SO_DETAIL, 
+QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS /*, QCTL.COMPANIES COMP /*,  QCTL.SALESPERSON SLSP   */
+
+/* JOIN QCTL.COMPANIES COMP ON (COMP.CMP_AUTO_KEY = INVC_HEADER.CMP_AUTO_KEY)  */
+
+
+WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY 
+AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY  
+AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY 
+/* AND COMP.CMP_AUTO_KEY = INVC_HEADER.CMP_AUTO_KEY */ 
+/* AND SLSP.SPN_AUTO_KEY = COMP.SPN_AUTO_KEY */
+
+
+
+AND INVC_HEADER.POST_DESC = 'Posted'  
+
+AND ROWNUM <= 200 
+
+/* AND SO_HEADER.CMP_AUTO_KEY = 156 */
+
+ORDER BY SO_HEADER.ENTRY_DATE DESC , Bill_Name, PN
+
+
+'--------------------------- Query One
+------------ Accumulate all sales orders for a given date range and accumulate all
+for total orders
+
+
+SELECT SUM(TOTAL_PRICE) FROM  QCTL.SO_HEADER SO_HEADER
+
+FULL OUTER JOIN QCTL.SO_DETAIL SO_DETAIL ON SO_DETAIL.SOH_AUTO_KEY = SO_HEADER.SOH_AUTO_KEY
+FULL OUTER JOIN QCTL.PARTS_MASTER PARTS_MASTER ON PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY 
+
+WHERE SO_HEADER.ENTRY_DATE >= to_date('01/24/2010', 'MM/DD/YY') AND SO_HEADER.ENTRY_DATE <= to_date('01/28/2010', 'MM/DD/YYYY')
+
+
+
+'-------------------------------- Query 2 Call the same cumulativew query but accumulate on ly thio
+
+
+all sales
+
+SELECT SUM(TOTAL_PRICE) FROM  QCTL.INVC_HEADER INVC_HEADER
+
+FULL OUTER JOIN QCTL.INVC_DETAIL INVC_DETAIL ON INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY
+FULL OUTER JOIN QCTL.PARTS_MASTER PARTS_MASTER ON PARTS_MASTER.PNM_AUTO_KEY = INVC_DETAIL.PNM_AUTO_KEY 
+
+WHERE INVC_HEADER.INVOICE_DATE >= to_date('01/11/2010', 'MM/DD/YY') AND INVC_HEADER.INVOICE_DATE <= to_date('01/15/2010', 'MM/DD/YYYY')
+
+
+AND INVC_HEADER.POST_DESC = 'Posted' 
+
+
+
+//----------------- query to detmine the qty shipped and or $ of sales for a given part
+
+
+SELECT SUM(TOTAL_PRICE),  INVC_NUMBER, TOTAL_PRICE, PARTS_MASTER.PN, INVC_DETAIL.QTY_ORDERED, INVC_DETAIL.SHIP_DATE, INVC_DETAIL.QTY_SHIP   /* SUM(INVC_DETAIL.QTY_ORDERED) */
+
+FROM  QCTL.INVC_HEADER INVC_HEADER
+FULL OUTER JOIN QCTL.INVC_DETAIL INVC_DETAIL ON INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY
+FULL OUTER JOIN QCTL.PARTS_MASTER PARTS_MASTER ON PARTS_MASTER.PNM_AUTO_KEY = INVC_DETAIL.PNM_AUTO_KEY
+
+WHERE INVC_HEADER.INVOICE_DATE >= to_date('2/3/2009', 'MM/DD/YY') AND INVC_HEADER.INVOICE_DATE <= to_date('2/3/2010', 'MM/DD/YYYY')
+
+AND (PARTS_MASTER.PN = '858885JP-3') AND (INVC_HEADER.CMP_AUTO_KEY = 156)
+
+/* AND INVC_HEADER.POST_DESC = 'Posted'  */
+
+
+'****************************************************
+MO and PO - back order queries
+'****************************************************
+
+tables SALES_MFG for work order parts
+		PURCHASES_SALES  for the purchase order items
+
+
+
+select ps.POS_AUTO_KEY, ps.QTY_ORDERED, pn.PN, so.qty_ordered, pod.next_delivery_date, pod.qty_rec, pod.qty_ordered
+
+from purchase_sales ps, parts_master pn, so_detail so, po_detail pod
+
+where ps.sod_auto_key = 16003
+and so.sod_auto_key = ps.sod_auto_key
+and so.PNM_AUTO_KEY = pn.PNM_AUTO_KEY
+and pod.pod_auto_key = ps.pod_auto_key
+
+POS_AUTO_KEY           QTY_ORDERED            PN                                       QTY_ORDERED            NEXT_DELIVERY_DATE        QTY_REC                QTY_ORDERED            
+---------------------- ---------------------- ---------------------------------------- ---------------------- ------------------------- ---------------------- ---------------------- 
+103                    2                      379254JP                                 2                      10-MAR-10                 10                     10                     
+
+
+
+
+
+
+select sm.SMG_AUTO_KEY, sm.QTY_ORDERED, pn.PN, woo.manual_ecd, sm.QTY_MFG
+
+from sales_mfg sm, parts_master pn, so_detail so, wo_operation woo
+
+where sm.sod_auto_key = 16001
+and so.sod_auto_key = sm.sod_auto_key
+and so.PNM_AUTO_KEY = pn.PNM_AUTO_KEY
+and woo.woo_auto_key = sm.woo_auto_key
+
+
+SMG_AUTO_KEY           QTY_ORDERED            PN                                       MANUAL_ECD                QTY_MFG                
+---------------------- ---------------------- ---------------------------------------- ------------------------- ---------------------- 
+12                     2           
+
+           3238470JP-21                             26-MAR-10                 0         
+           
+           
+           
+           
+           
+           
+           
+ ------------------------------------------------- to correct the error of a sales
+ order entered one day and the invoice / ship happening the next say
+ 
+ SELECT  SO_DETAIL.SOD_AUTO_KEY, COMP.COMPANY_CODE, SLSP.SALESPERSON_CODE, SLSP.SALESPERSON_NAME, 
+SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER, 
+SO_HEADER.TOTAL_PRICE, SO_DETAIL.UNIT_PRICE, PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, SO_DETAIL.QTY_ORDERED,  
+SO_DETAIL.QTY_INVOICED, SO_DETAIL.DELIVERY_DATE, SO_HEADER.CMP_AUTO_KEY , PARTS_MASTER.PNM_AUTO_KEY    
+
+FROM  QCTL.PARTS_MASTER PARTS_MASTER, QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.COMPANIES COMP, 
+QCTL.SALESPERSON SLSP  
+
+WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  
+AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY 
+AND COMP.CMP_AUTO_KEY = SO_HEADER.CMP_AUTO_KEY  
+AND SLSP.SPN_AUTO_KEY = COALESCE(SO_HEADER.SPN_AUTO_KEY, 19)  
+AND (SO_HEADER.ENTRY_DATE = to_date('03/11/2010' , 'MM/DD/YY'))  
+
+ORDER BY SLSP.SALESPERSON_CODE, BILL_NAME, PN, SO_HEADER.ENTRY_DATE     
+
+
+
+
+SELECT  INVC_NUMBER, SO_DETAIL.SOD_AUTO_KEY, SO_DETAIL.SOH_AUTO_KEY,TOTAL_PRICE, PARTS_MASTER.PN, INVC_DETAIL.QTY_ORDERED, INVC_DETAIL.SHIP_DATE, INVC_DETAIL.QTY_SHIP   /* SUM(INVC_DETAIL.QTY_ORDERED) */
+
+FROM  QCTL.INVC_HEADER INVC_HEADER
+FULL OUTER JOIN QCTL.INVC_DETAIL INVC_DETAIL ON INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY
+FULL OUTER JOIN QCTL.PARTS_MASTER PARTS_MASTER ON PARTS_MASTER.PNM_AUTO_KEY = INVC_DETAIL.PNM_AUTO_KEY
+
+FULL OUTER JOIN QCTL.SO_DETAIL SO_DETAIL ON INVC_DETAIL.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY
+
+WHERE INVC_HEADER.INVOICE_DATE = to_date('3/12/2010', 'MM/DD/YY')
+
+
+
+
+------------------------------------- look at a part in the work orders
+this will look up all of the work orders related to a prat number
+
+select sm.smg_auto_key, sm.qty_ordered, so.entry_date, sm.qty_mfg, pn.PN, woo.manual_ecd, woo.open_flag, woo.entry_date, woo.due_date,
+woo.active_flag, woo.kit_qty
+
+from  parts_master pn, wo_operation woo, sales_mfg sm, so_detail so
+
+where pn.PN_STRIPPED = '3238470JP21'  and woo.Open_flag = 'T' 
+
+
+and so.sod_auto_key = sm.sod_auto_key 
+and woo.pnm_auto_key = pn.pnm_auto_key
+and woo.woo_auto_key = sm.woo_auto_key
+
+
+
+SMG_AUTO_KEY           QTY_ORDERED            ENTRY_DATE                QTY_MFG                PN                                       MANUAL_ECD                OPEN_FLAG ENTRY_DATE                DUE_DATE                  ACTIVE_FLAG KIT_QTY                
+---------------------- ---------------------- ------------------------- ---------------------- ---------------------------------------- ------------------------- --------- ------------------------- ------------------------- ----------- ---------------------- 
+12                     2                      09-MAR-10                 0                      3238470JP-21                             26-MAR-10                 T         14-OCT-09                                           T           71                     
+13                     2                      11-MAR-10                 0                      3238470JP-21                             26-MAR-10                 T         14-OCT-09                                           T           71                     
+
+
+
+---------------------------------------------------------------------
+Now we need to locate any reservations for these parts
+
+
+??????????????????????????????????
+
+------------------------------------------------------------------------------
+this query will look up open purchase orders for a given part number
+
+select pod.poh_auto_key, pod.pod_auto_key, pod.entry_date, pn.PN, pod.next_delivery_date, pod.qty_rec, pod.qty_ordered, pod.qty_back_order
+
+from  parts_master pn, po_detail pod, po_header poh
+
+where pn.pn_stripped = 'KJB991103V'
+and pod.pnm_auto_key = pn.pnm_auto_key
+and poh.poh_auto_key = pod.poh_auto_key
+and poh.open_flag = 'T' 
+and pod.qty_rec < pod.qty_ordered 
+
+POH_AUTO_KEY           POD_AUTO_KEY           ENTRY_DATE                PN                                       NEXT_DELIVERY_DATE        QTY_REC                QTY_ORDERED            
+---------------------- ---------------------- ------------------------- ---------------------------------------- ------------------------- ---------------------- ---------------------- 
+6217                   7140                   22-FEB-10                 KJB991103V                               31-MAR-10                 0                      15                     
+
+
+------------------- now we need to find if any of these are 
+
+??????????????????????????
+
+
+
+
+---------------------------------------------------
+
+
+
+
+------------------------------------------------------------------------------
+These queries produce a list of all custom pricing 
+
+-------------------------------------------------------------------------
+this one produces a list ordered by conmpany name then PN - UNIT_Price is applied
+
+ Select companies.company_name, parts_master.PN, parts_master.description,prices.FOREIGN_UNIT_PRICE, 
+ prices.FOREIGN_LIST_PRICE, 
+ prices.UNIT_PRICE, prices.LIST_PRICE, prices.REMARKS, prices.DISCOUNT, prices.PRICE_LINE 
+ 
+ FROM PRICES, COMPANIES, PARTS_MASTER
+ WHERE parts_master.pnm_auto_key = prices.pnm_auto_key
+ AND companies.cmp_auto_key = prices.cmp_auto_key
+ 
+ 
+ ORDER BY companies.company_name, parts_master.PN
+ 
+ 1848 rows selected
+
+COMPANY_NAME                                       PN                                       DESCRIPTION                                        FOREIGN_UNIT_PRICE     FOREIGN_LIST_PRICE     UNIT_PRICE             LIST_PRICE             REMARKS                                            DISCOUNT               PRICE_LINE             
+-------------------------------------------------- ---------------------------------------- -------------------------------------------------- ---------------------- ---------------------- ---------------------- ---------------------- -------------------------------------------------- ---------------------- ---------------------- 
+AAR  Amsterdam                                     3163812JP-2                              Guide                                              0                      292                    252                    292                    AAR                                                13.7                   2                      
+AAR  Amsterdam                                     3238470JP-21                             Ball Nut                                           0                      2178                   2028                   2178                   AAR                                                6.89                   1                      
+AAR  Amsterdam                                     3238470JP-23                             Sleeve                                             0                      101                    101                    101                    AAR                                                0                      1                      
+AAR  Amsterdam                                     3238470JP-27                             Wiper Seal                                         176                    209                    176                    209                    AAR Amsterdam                                      15.79                  2                      
+AAR  Amsterdam                                     405243JP                                 Element                                            0                      79                     75                     79                     AAR                                                5.06                   3                      
+AAR Aircraft Components Services                   106711JP                                 Fixed Bearing                                      410.31                 0                      410.31                 0                      AAR Aircraft Components Services                   0                      3                      
+AAR Aircraft Components Services                   106712JP                                 Fixed Bearing                                      411.28                 0                      411.28                 0                      AAR Aircraft Components Services                   0                      3                      
+AAR Aircraft Components Services                   106722JP                                 Shaft, Control Drive                               1692.65                0                      1692.65                0                      AAR Aircraft Components Services                   0                      2                      
+AAR Aircraft Components Services                   106736JP                                 Cover                                              677.06                 0                      677.06                 0                      AAR Aircraft Components Services                   0                      3                      
+A
+
+---------------------------------------------------------------------------------
+this produces a list of all the custom prices that are not attached to a company
+
+
+ Select parts_master.PN, parts_master.description,prices.FOREIGN_UNIT_PRICE, 
+ prices.FOREIGN_LIST_PRICE, 
+ prices.UNIT_PRICE, prices.LIST_PRICE, prices.REMARKS, prices.DISCOUNT, prices.PRICE_LINE 
+ 
+ FROM PRICES, PARTS_MASTER
+ WHERE parts_master.pnm_auto_key = prices.pnm_auto_key
+ AND prices.cmp_auto_key is null
+ 
+ 
+ ORDER BY parts_master.PN
+ 
+ 234 rows selected
+
+PN                                       DESCRIPTION                                        FOREIGN_UNIT_PRICE     FOREIGN_LIST_PRICE     UNIT_PRICE             LIST_PRICE             REMARKS                                            DISCOUNT               PRICE_LINE             
+---------------------------------------- -------------------------------------------------- ---------------------- ---------------------- ---------------------- ---------------------- -------------------------------------------------- ---------------------- ---------------------- 
+5907658JP                                Roller Bearing (170each per Package)               0                      0                      153                    153                    Airline                                            0                      1                      
+742687AVS-1                              Washer                                             0                      0                      12                     12                     Airline                                            0                      1                      
+742687AVS-2                              Washer                                             0                      0                      13                     13                     Airline                                            0                      1                      
+806164JP-1                               Wear Disk                                          0                      0                      15                     17                     Airline                                            11.76                  1                      
+858885JP-3                               Diaphragm                                          0                      0                      16                     18                     Airline                                            11.11                  1                      
+754504JP-3                               Washer - Rotary Actuator                           0                      0                      32                     34                     Airline                                            5.88                   1                      
+
+
+--------------------------------------------------------------------------
+this locates all of the various prices associated with any price line part
+---- certain price records have no company assocaited and have remarks like
+'airline' 'overhaul' - but also fokker, aerotron, lufthansa - these are
+coalesced to Anu Goels 'company' for now
+
+
+ Select parts_master.PN, companies.company_name, 
+ prices.UNIT_PRICE,  prices.REMARKS,  parts_master.description,  parts_master.list_price, parts_master.exch_list_price
+ 
+ FROM PRICES, COMPANIES, PARTS_MASTER
+ WHERE parts_master.pnm_auto_key = prices.pnm_auto_key
+ AND companies.cmp_auto_key = coalesce(prices.cmp_auto_key, 1936)
+ 
+ 
+ ORDER BY  parts_master.PN, companies.company_name
+ 
+ 2085 rows selected
+
+PN                                       COMPANY_NAME                                       UNIT_PRICE             REMARKS                                            DESCRIPTION                                        LIST_PRICE             EXCH_LIST_PRICE        
+---------------------------------------- -------------------------------------------------- ---------------------- -------------------------------------------------- -------------------------------------------------- ---------------------- ---------------------- 
+10-900-17A-2                             Comair                                             32                     Comair                                             Static Discharger                                  0                      0                      
+10-900-28A-2                             Comair                                             50                     Comair                                             Static Discharger                                  0                      0                      
+10-900-31A-2                             Comair                                             31                     Comair                                             Static Discharger                                  0                      0                      
+10-900-53A-2                             Comair                                             33                     Comair                                             Static Discharger                                  0                      0                      
+1002001-007                              Aerotron Airpower                                  1287                   Aerotron Airpower                                  Rotor                                              0                      0                      
+1002001-007FA                            Aerotron Airpower                                  1287                   Aerotron Airpower                                  Rotor                                              1555                   1555                   
+10
+
+
+
+----------------------------------------------------------------------------------------------
+3/30/2010 sales by company / part for Jeff Dark
+-------------------------------------------------------------------------------------------
+SELECT  INVC_HEADER.BILL_NAME, 
+INVC_HEADER.COMPANY_PO_NUMBER, 
+PARTS_MASTER.PN,  PARTS_MASTER.DESCRIPTION, INVC_HEADER.INVOICE_DATE,  INVC_DETAIL.QTY_SHIP,  
+INVC_DETAIL.UNIT_PRICE
+
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER /*, QCTL.SO_DETAIL SO_DETAIL, 
+QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS */
+
+/* WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY */
+WHERE PARTS_MASTER.PNM_AUTO_KEY = INVC_DETAIL.PNM_AUTO_KEY  
+/* AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY   */
+
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY 
+
+AND INVC_HEADER.INVOICE_DATE >= to_date('01/01/2008', 'MM/DD/YY') AND INVC_HEADER.INVOICE_DATE <= to_date('03/30/2010', 'MM/DD/YYYY')
+
+
+ORDER BY INVC_HEADER.BILL_NAME, PN,  INVC_HEADER.INVOICE_DATE 
+
+3Gen Avion Trading	P0001523	88373A	Position Sensor Potentiometer	22-JUL-09	2	795
+3Gen Avion Trading	P0001523	SHIPPING	Shipping	22-JUL-09	1	19.47
+A. J. Walter Aviation	189137	219769JP-1	Gear, Matched Set	22-DEC-08	1	6446
+A. J. Walter Aviation	179952	3504845-3	Pinion Gear	09-MAY-08	1	7682
+A. J. Walter Aviation	179947	3504853-1	Shaft, Decoupler	09-MAY-08	1	12729
+
+
+
+---------------------------------------------------------------------------------------
+Salesperson per company with vendor flag and company flag  - Leah 3/31/2010
+-----------------------------------------------------------------------------------
+select company_name, salesperson.salesperson_name, vendor_flag, customer_flag from companies, salesperson
+
+where salesperson.spn_auto_key = coalesce(companies.spn_auto_key, 19)
+
+
+order by companies.company_name
+
+3Gen Avion Trading	Unknown		T
+3S International Enterprises	Unknown	T	F
+A New Heart for Devon	Unknown	T	
+A System Hydraulics	Bill Lage	F	T
+
+
+
+Select pall.*, n.NHAId, n.ATAChapter, n.PartsPerNHA, nha.NHA 
+
+from Part p 
+
+JOIN Part2NHA n ON n.PartID = p.PartID 
+JOIN Part2NHA nall ON nall.NHAID = n.NHAId 
+JOIN Part pall ON pall.PartID = nall.PartID 
+Join NHA nha ON nha.NHAID = nall.NHAId  
+
+WHERE ( REPLACE(p.OEMPN, '-', '') = '10671' OR REPLACE(p.JPEPN, '-', '') = '10671' ) 
+
+OR (REPLACE(lower(n.NHA), '-', '') = 'mfp297') 
+
+ORDER BY pall.JPEPN; 
+
+
+---------------------------------------------------------------------------------------
+3/30  --- located the parts that have no company key
+----------------------------------------------------------------------------------------
+
+
+ Select parts_master.PN, parts_master.description,prices.FOREIGN_UNIT_PRICE, 
+ prices.FOREIGN_LIST_PRICE, 
+ prices.UNIT_PRICE, prices.LIST_PRICE, prices.REMARKS, prices.DISCOUNT, prices.PRICE_LINE 
+ 
+ FROM PRICES, PARTS_MASTER
+ WHERE parts_master.pnm_auto_key = prices.pnm_auto_key
+ AND prices.cmp_auto_key is null
+ 
+ 
+ ORDER BY parts_master.PN
+ 
+ --------------------------------------------------------------------------------
+ produce a list of all companies with the salesperson assigned an conpany / vendor flags
+ 3/30
+ ------------------------------------------------------------------------------------
+ select company_name, salesperson.salesperson_name, vendor_flag, customer_flag from companies, salesperson
+
+where salesperson.spn_auto_key = coalesce(companies.spn_auto_key, 19)
+
+
+order by companies.company_name
+
+
+----------------------------------------------------------------------------------------------locate all invoices for a date range in order to determine the price charged  Jeff
+3/30/2010
+------------------------------------------------------------------------------------------
+SELECT  INVC_HEADER.BILL_NAME, 
+INVC_HEADER.COMPANY_PO_NUMBER, 
+PARTS_MASTER.PN,  PARTS_MASTER.DESCRIPTION, INVC_HEADER.INVOICE_DATE,  INVC_DETAIL.QTY_SHIP,  
+INVC_DETAIL.UNIT_PRICE
+
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER /*, QCTL.SO_DETAIL SO_DETAIL, 
+QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS */
+
+/* WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY */
+WHERE PARTS_MASTER.PNM_AUTO_KEY = INVC_DETAIL.PNM_AUTO_KEY  
+/* AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY   */
+
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY 
+
+AND INVC_HEADER.INVOICE_DATE >= to_date('01/01/2008', 'MM/DD/YY') AND INVC_HEADER.INVOICE_DATE <= to_date('03/30/2010', 'MM/DD/YYYY')
+
+
+ORDER BY INVC_HEADER.BILL_NAME, PN,  INVC_HEADER.INVOICE_DATE 
+
+----------------------------------------------------------------------------------------------
+locate all invoices that have a PCC_AUTO_CADE of 9 (Borrowed items)
+---------------------------------------------------------------------------------------
+SELECT  SO_HEADER.SOH_AUTO_KEY, SO_HEADER.TOTAL_COST, SO_HEADER.BILL_NAME, SO_HEADER.COMPANY_REF_NUMBER,
+PARTS_MASTER.PN, SO_HEADER.ENTRY_DATE, INVC_HEADER.AIRWAY_BILL, SO_DETAIL.QTY_ORDERED, SO_DETAIL.SOD_AUTO_KEY, 
+SO_DETAIL.QTY_INVOICED, INVC_HEADER.INH_AUTO_KEY, INVC_DETAIL.IND_AUTO_KEY, INVC_DETAIL.SHIP_DATE, 
+INVC_HEADER.sva_auto_key, INVC_HEADER.COMPANY_PO_NUMBER   
+
+FROM QCTL.INVC_DETAIL INVC_DETAIL, QCTL.INVC_HEADER INVC_HEADER, QCTL.PARTS_MASTER PARTS_MASTER, 
+QCTL.SO_DETAIL SO_DETAIL, QCTL.SO_HEADER SO_HEADER, QCTL.STOCK_RESERVATIONS STOCK_RESERVATIONS   
+
+WHERE SO_HEADER.SOH_AUTO_KEY = SO_DETAIL.SOH_AUTO_KEY  
+AND PARTS_MASTER.PNM_AUTO_KEY = SO_DETAIL.PNM_AUTO_KEY 
+AND STOCK_RESERVATIONS.IND_AUTO_KEY = INVC_DETAIL.IND_AUTO_KEY  
+AND STOCK_RESERVATIONS.SOD_AUTO_KEY = SO_DETAIL.SOD_AUTO_KEY  
+AND INVC_DETAIL.INH_AUTO_KEY = INVC_HEADER.INH_AUTO_KEY  
+AND INVC_HEADER.POST_DESC = 'Posted'  
+
+AND SO_DETAIL.PCC_AUTO_KEY != 9
+
+AND ROWNUM <= 1000 
+AND (SO_HEADER.CMP_AUTO_KEY = 156 OR SO_HEADER.CMP_AUTO_KEY = 582)
+ORDER BY SO_HEADER.ENTRY_DATE DESC 
+
+-------------------------------------------------------------------------------------------
+locate all custom prices not associated with a company auto key
+------------------------------------------------------------------------------------------
+
+ Select parts_master.PN, parts_master.description,prices.FOREIGN_UNIT_PRICE, 
+ prices.FOREIGN_LIST_PRICE, 
+ prices.UNIT_PRICE, prices.LIST_PRICE, prices.REMARKS, prices.DISCOUNT, prices.PRICE_LINE 
+ 
+ FROM PRICES, PARTS_MASTER
+ WHERE parts_master.pnm_auto_key = prices.pnm_auto_key
+ AND prices.cmp_auto_key is null
+ 
+ 
+ ORDER BY parts_master.PN
+
+
+
+
+
+ 
+ ----------------------------------------------------------------------------------- 
+ SQL find all parts for NHA
+ 
+ Select p.*, n.NHAId, n.ATAChapter, n.PartsPerNHA, nha.NHA  from Part p  JOIN Part2NHA n ON n.PartID = p.PartID  Join NHA nha ON nha.NHAID = n.NHAId   WHERE (REPLACE(lower(nha.NHA), '-', '') like 'mfp%' AND n.NHAID = nha.NHAID )  ORDER BY p.JPEPN; 
+
+
+--------------------------------------------------------------------------------------
+find matching nhas

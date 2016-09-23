@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /jserve1/
+Disallow: /Temp/
+Disallow: /Reports/

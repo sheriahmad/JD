@@ -1,0 +1,2568 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ecom_prodSearch.aspx.cs" Inherits="ecom_prodSearch" Theme="eCommerceTheme" EnableEventValidation="false" %>
+
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc1" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Jet Parts Engineering: Product Search</title>
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+    
+    function checkIt(evt) {
+        evt = (evt) ? evt : window.event
+        var charCode = (evt.which) ? evt.which : evt.keyCode
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            status = "This field accepts numbers only."
+            return false;
+        }
+        return true;
+    }
+    
+    
+    function submitOnEnter(event, theSubmitButton) {
+        if (event.keyCode == 13) {
+            document.getElementById(theSubmitButton).click();
+        }
+        return true;
+    }
+
+    function focusOnEnter(event, thisControl) {
+        if (event.keyCode == 13) {
+            document.getElementById(thisControl).focus();
+        }
+        return true;
+    }
+
+
+    function doButtonClick(thisButtonID) {
+        document.getElementById(thisButtonID).click();
+    }
+    
+
+
+</SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+
+    function capLock(e) {
+        kc = e.keyCode ? e.keyCode : e.which;
+        sk = e.shiftKey ? e.shiftKey : ((kc == 16) ? true : false);
+        if (((kc >= 65 && kc <= 90) && !sk) || ((kc >= 97 && kc <= 122) && sk))
+            document.getElementById('divMayus').style.visibility = 'visible';
+        else
+            document.getElementById('divMayus').style.visibility = 'hidden';
+    }
+
+   
+ </SCRIPT>
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+
+
+    function ReplaceThrobber(throbberPanel, theSubmitButton, openPanel) {
+
+        $find(openPanel).hide();
+        $find(throbberPanel).show();
+        document.getElementById(theSubmitButton).click();
+    }
+
+</SCRIPT>
+
+
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+
+function switchMenu(obj) {
+    var el = document.getElementById(obj);
+    var elImg = document.getElementById(obj + "Img");
+    if ( el.style.display != 'none' ) {
+        el.style.display = 'none';
+        elImg.style.display = '';
+    }
+    else {
+        el.style.display = '';
+        elImg.style.display = 'none';
+    }
+   }
+
+
+ </SCRIPT>
+ 
+ 
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+    
+   function showThrobber(theThrobberButton, theSubmitButton) {
+
+       document.getElementById(theThrobberButton).click();
+       document.getElementById(theSubmitButton).click();
+       //__doPostBack('$ctl00$upPnlSmartPartsBuyer$btnPartsSearch', '');
+   }
+
+
+   function qtyUpdate(theThrobberButton, theSubmitButton) 
+   {
+       document.getElementById(theThrobberButton).click();
+       document.getElementById(theSubmitButton).click();
+       
+   }
+
+   function qtyOnBlurIf(theThrobberButton, theSubmitButton, thisControl) 
+    {
+    var hiddenValue = document.getElementById("hidden_" + thisControl).value;
+    var curValue = document.getElementById(thisControl).value;
+
+    if (curValue != hiddenValue) {
+
+        document.getElementById(theThrobberButton).click();
+        document.getElementById(theSubmitButton).click();
+    }
+
+   }
+    
+
+    function jumpScroll() {
+        window.scroll(0, 0); // horizontal and vertical scroll targets
+    }
+
+
+</script>
+
+
+
+
+    
+    	
+<style type="text/css" > 
+.modalBackground {
+	background-color:Gray;
+	filter:alpha(opacity=70);
+	opacity:0.7;
+}
+
+
+</style>
+</head>
+<body>
+    
+       
+    
+<DIV ID="overDiv" STYLE="position:absolute; visibility:hide;"></DIV>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+
+    var foreground = "#000000";
+    var menubackground = "#000000"; 
+    var backcolor = "#ffffff";
+    var textcolor = "#ff0000";
+    var headlinecolor = "#00ff00";
+    var closecolor = "#0000ff";
+//-->
+</script>
+<SCRIPT LANGUAGE="JavaScript" SRC="js/hottags.js"></SCRIPT>
+
+     
+
+   <form id="form1" runat="server">
+   
+  		<asp:ScriptManager runat="server" id="sm1" EnablePartialRendering="true"  >
+  		
+  		<Services> 
+        <asp:ServiceReference Path="ecom_PartDetailModal.asmx"  /> 
+        <asp:ServiceReference Path="ecom_EditAccountModal.asmx"  /> 
+        </Services> 
+        
+        </asp:ScriptManager>
+  		
+
+        <%-- nk:HistoryControl runat="server" ID="history" OnNavigate="OnHistoryNavigate" / --%>
+
+<script type="text/javascript" language="javascript">
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(EndRequestHandler);
+    function EndRequestHandler(sender, args) {
+        scrollTo(0, 0);
+    }
+</script>
+
+
+
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+
+
+    //----------------- lets run the throbber setup for the popup onLoad
+    ecom_PartDetailModal.DeconDetailPanel("", BuildDisplayPanel);
+
+    function HideModalPopup(thisModalPanel) {
+        var modal = $find(thisModalPanel);
+        modal.hide();
+        ecom_PartDetailModal.DeconDetailPanel("", BuildDisplayPanel);
+    }
+    
+    function ShowMyModalPopupEvt(thisModalPanel, PartID, evt) {
+        var modal = $find(thisModalPanel);
+        var panel = $get('mpPartsDetail');
+        ecom_PartDetailModal.BuildDetailPanel(PartID, BuildDisplayPanel);
+        modal.show();
+        panel.style.top = '50px';
+        scrollTo(0, 0);
+    }
+
+
+    //------------------------- switch from Detail to new panel
+    //---- add a back button
+    function ModalSwitchEvt(thisModalPanel, PartID, evt, backPartID) {
+        //-------------- update any changes from the Detail Page
+        //---- the backPartID will tell whether to save part or NHA NHA| PN|
+
+        ecom_PartDetailModal.DeconDetailPanel("", BuildDisplayPanel);
+        var modal = $find(thisModalPanel);
+        var panel = $get('mpPartsDetail');
+        ecom_PartDetailModal.BuildDetailPanel(PartID, BuildDisplayPanel);
+        modal.show();
+        panel.style.top = '50px';
+        scrollTo(0, 0);
+    }
+
+
+
+    function BuildDisplayPanel(result) {
+        var label = document.getElementById('lblPartsPopupAJAX');
+        label.innerHTML = result;
+    }
+    
+</script>
+
+
+
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+
+    //----------------- lets run the throbber setup for the popup onLoad
+    ecom_EditAccountModal.DeconAccountPanel("", BuildAccountPanel);
+
+    function HideAccountModalPopup(thisModalPanel) {
+        var modal = $find(thisModalPanel);
+        modal.hide();
+        ecom_EditAccountModal.DeconAccountPanel("", BuildAccountPanel);
+    }
+
+    function ShowMyAccountModalPopupEvt(AccountID) {
+        var modal = $find('ModalPopupExtenderAccountUpdate');
+        var panel = $get('mpAccountUpdate');
+        ecom_EditAccountModal. BuildAccountPopup(AccountID, BuildAccountPanel);
+        modal.show();
+        panel.style.top = '50px';
+        scrollTo(0, 0);
+    }
+
+//    //------------------------- switch from Detail to new panel
+//    //---- add a back button
+//    function ModalAccountSwitchEvt(thisModalPanel, AccountID, evt, backAccountID) {
+//        //-------------- update any changes from the Detail Page
+//        //---- the backPartID will tell whether to save part or NHA NHA| PN|
+
+//        ecom_EditAccountModal.DeconAccountPanel("", BuildAccountPanel);
+
+//        var modal = $find(thisModalPanel);
+//        var panel = $get('mpAccountUpdate');
+//        ecom_PartDetailModal.BuildAccountPopup(AccountID, BuildAccountPanel);
+//        modal.show();
+//        panel.style.top = '50px';
+//        scrollTo(0, 0);
+//    }
+
+    function BuildAccountPanel(result) {
+        var label = document.getElementById('lblAccountAJAX');
+        label.innerHTML = result;
+    }
+    
+</script>
+
+    <div>
+    
+
+    
+  <div id="header">
+		<table>
+			<tr>
+				<td style="width:70%;">
+					<a href="default.aspx"><img id="logo" src="images/logo-JPE_000.gif" title="Jet Parts Engineering" width="201" height="57" /></a>
+				</td>
+				<td style="margin-right: 5px auto; text-align:right;">
+						
+        <asp:UpdatePanel ID="upHeader" runat="server" UpdateMode="Conditional" >
+        <ContentTemplate>
+
+ <table><tr>
+ 
+ <% 
+     if ((int)Page.Session["LoggedInUserID"] > 0)
+     {
+     %>
+     <td style="font:verdana;color:#999999;font-size:9px;margin: 5px auto; text-align:center;width:75px;height:80px;">
+ 
+    <a name onclick="javascript: return doButtonClick('btnEditAccount')"><img src="images/editmyaccount.png" border="0" alt="Manage My Account" /><br />Manage My Account</a>
+         
+     </td>
+     <td style="font:verdana;color:#999999;font-size:9px;margin: 5px auto; text-align:center;width:75px;">
+        <a name onclick="javascript: return doButtonClick('btnLogOut')"><img src="images/logout.png" border="0" alt="Manage My Account" /><br />Log Out</a>
+        <asp:Button runat="server" ID="btnLogOut" Text="" style="visibility:hidden;" OnClick="btnLogOut_Click"   /></td>
+
+    <%
+     }
+     else
+     {
+      %>
+      <td style="width:150px;height:80px;">&nbsp;</td>
+      <%
+     }
+       %>
+     
+ <td style="font:verdana;color:#999999;font-size:9px;margin: 5px auto; text-align:center;width:75px;">
+   <a name onclick="javascript: return doButtonClick('btnShowHelp')"><img src="images/help.gif" border="0" alt="Open Help Panel" /><br />Help</a>
+
+   </td>
+ 
+ </tr></table>
+             
+             
+          
+        </ContentTemplate>
+        <Triggers>
+              
+        </Triggers>
+        </asp:UpdatePanel>
+      
+          
+			
+				</td>
+			</tr>
+			<tr id="slogan_stripe">
+				<td colspan="2" style="background-color: #000;" height="18px">
+					<img src="images/header_slogan.gif" style="border: 0px; margin: 0px;"/>
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	
+	
+	
+	
+	
+
+	<div id="main">
+	
+		<table border="0" width="758" id="layout_grid" style="border-collapse: collapse" cellpadding="0">
+<!-- ROW 01: -->
+			<tr id="menu">
+<!-- NAV: GLOBAL -->
+				<td id="awmAnchor-jpe_menu02" bgcolor="#666666" colspan="7" width="758">
+
+				</td>
+			</tr>
+<!-- ROW 02: -->
+
+			<tr id="focus"> 
+				<td rowspan="8" width="1" id="left_nav" style="vertical-align:top;">
+
+				</td>
+		
+				<td class="border"width="1"></td>
+<!-- INTRO -->
+				<td  colspan="5" width="758" >
+				
+			
+
+
+
+
+
+ 
+ <center>
+
+<div class='ecomDiv'>
+
+
+    
+    <!-- Smart Parts Buyer Main Update Panel - wraps other layer 1 panels  -->			 
+<asp:UpdatePanel ID="upPnlSmartPartsBuyer" runat="server" UpdateMode="Conditional" >
+<ContentTemplate>
+
+
+
+
+ 
+ <table><tr><td><img src="images/spb6.png" border = "0" alt="Jet Parts Engineering's Smart Parts Buyer B2B eCommerce System for your FAA-PMA needs." /></td>
+ 
+<%-- <td style="text-align:center; margin:5px auto;">
+ <% 
+     if ((int)Page.Session["LoggedInUserID"] > 0)
+     {
+     %>
+     
+
+     
+     <asp:ImageButton ID="ibEditMyAccount" runat="server"  ImageUrl = "images/editmyaccount.png" OnClick="ibEditMyAccount_Click" AlternateText="Manage my Account"  /><br />
+      <a name onclick ="javascript: doButtonClick('btnEditAccount');">Manage my Account</a>
+     
+     </td>
+     <td style="text-align:center; margin:5px auto;">
+     
+     <asp:ImageButton ID="ibLogOut" runat="server"  ImageUrl = "images/logout.png" OnClick="btnLogOut_Click" AlternateText="Log out of Smart Parts Buyer"  /><br />
+     <a name onclick="javascript: return doButtonClick('ibLogOut')">Log Out</a>
+    <%
+     }
+     
+      %>
+     
+ </td>--%>
+ 
+ </tr></table>
+ </p></p>
+
+ 
+
+ 
+ 
+ 
+
+
+  
+ <%--
+<table><tr><td><b>Smart Parts Buyer</b> eCommerce System</td>
+
+
+<td> 
+    <asp:ImageButton ID="ibSearchMore" runat="server"  ImageUrl = "images/searchmore.png" OnClick="btnSearchmore_Click" AlternateText="Click to search for more part"  />
+
+</td>
+<td>
+<asp:ImageButton ID="ibCheckout1" runat="server"  ImageUrl = "images/checkout2.gif" OnClick="btnCheckoutNow_Click" AlternateText="Click to checkout now"  />
+</td>
+<td>
+<asp:ImageButton ID="ibLogout" runat="server"  ImageUrl = "images/logout.png" OnClick="btnLogOut_Click" AlternateText="btnLogOut_Click"  />
+
+<td style="text-align:right;margin-right:0px auto;"> <asp:LinkButton ID="lbShowAllMode" runat="server" OnClick="btnShowAllMode_Click" text="" /> <asp:LinkButton ID="lbLogOut" runat="server" OnClick="btnLogOut_Click" ><b>Log Out</b></asp:LinkButton></td>
+
+</tr></tr></table>
+--%>
+
+ 
+
+ 
+ 
+ 
+
+	<!-- LOGIN PANEL -->
+	
+<asp:Panel ID="pnlLogin" runat = "server" >	
+<center>   
+     <table class='SBecomTable' style="width:400px;">
+     <tr><td class='SBHeaderBarTD' colspan='3' style="height:2px;">
+     </td></tr>
+    
+     <tr><td class='SBViewPortBorderTD' style="width:1px;"></td>
+     <td class='SBViewPortContentTD' >
+     
+     <!-- Begin Table Viewport Area -->
+              
+	<table class='GenViewPortTable'>
+	<tr><td>
+				<h3 style="color:#0B2B75;">Login</h3 >
+				
+			<table class="ecomLoginTable">
+			    <tr> 
+			    <td class= "login_titles"><asp:Label id="lblUserName" name="lblUserName" Text="User Name" runat="server" /></td>
+			    <td style = "login_controls">
+                <asp:TextBox ID="txtLoginUserName" runat="server"
+                    Width = "200px"
+                    CssClass = "ecomTextBoxes"
+                    TabIndex="1"
+                    MaxLength = "30"  />
+                    
+                    
+                <asp:RequiredFieldValidator ID="rfvUserName" runat="server"
+                    ControlToValidate="txtLoginUserName"
+                    ValidationGroup="vgLogin"
+                    Display="Dynamic"
+                    SetFocusOnError="True"
+                    TabIndex = "1"
+                    Text="Please Enter Your User Name"
+                    ErrorMessage="Please Enter Your User Name" />
+			    
+			    </td>
+			    </tr>
+			    <tr> 
+			    <td class= "login_titles"><asp:Label ID="lblPassword" name="lblPassword" Text="Password" runat="server" /></td>
+			    <td style = "login_controls"> 
+			    
+			    <table><tr><td WIDTH="200px;">
+			    <asp:TextBox ID="txtLoginPassword" runat="server"
+                    Width = "200px"
+                    TextMode = "Password"
+                    TabIndex = "2"
+                    OnKeyUp="submitOnEnter(event, 'btnLogin');"
+                    CssClass = "ecomTextBoxes"
+                    MaxLength = "30"  /></td><td style="width:100px;"><span id="divMayus" style="visibility:hidden;"><!-- img src="images/Caps-Lock-On_icon.gif" border = "0" alt="Your caps lock is on." / -->CAPS LOCK ON</span></td><td>
+                 
+                    
+                 <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server"
+                    ControlToValidate="txtLoginPassword"
+                    ValidationGroup="vgLogin"
+                    Display="Dynamic"
+                    SetFocusOnError="True"
+                    Text="Please Enter Your Password"
+                    ErrorMessage="Please Enter Your Password" />
+                    
+                    </td></tr></table>
+                    
+                    
+                    </td>
+			    </tr>
+			 </table>
+
+			<table><tr><td><a name onclick ="javascript: doButtonClick('btnForgottenPassword');"><img src="images/forgotten.gif" border = "0" alt="Forgotten username or password? Click Here." /></a></td><td><a name onclick ="javascript: doButtonClick('btnForgottenPassword');">Forget your password?  No Problem.</a></td><td> <asp:Button ID="btnLogin" TabIndex = "3" runat="server" Text="Login" 
+                     onclick="btnLogin_Click" /> </td></tr></table>
+            
+            <asp:Label ID="lblLoginError" runat="server" Text="" CssClass="modalMessages" />
+            
+         
+
+		</td></tr>
+		</table>
+     <!-- End  Table Viewport Area  -->
+     </td><td class='SBViewPortBorderTD' style="width:1px;"></td></tr>
+     <tr><td class='SBViewPortFooterTD' colspan = '3' style="height:2px;"></td></tr>
+     </table>
+     </center>
+     
+     
+     
+     
+     
+     <br /><br />
+     
+     
+     <p class="ecom_Headline">Discover an easier way to manage your PMA Parts Supply Requirements</p>
+     
+     <p class="ecom_BodyText">By partnering with <b>Jet Parts Engineering</b>, you gain a competitive advantage.  You save money and put your businss dollars to better use. </p>
+     
+      <p class="ecom_BodyText">We are proud to introduce <b>Smart Parts Buyer</b>, our innovative, easy-to-use, intuitive B2B <i>[business to business]</i> eCommerce system designed by our engineers from the ground up to give you the best possible on-line buying experience. </p>
+      
+      <table><tr><td>
+       <p class="ecom_Headline">Sign-up Today!</p>
+      
+      <p class="ecom_BodyText">If you are enjoying the benefits of buying from <b>Jet Parts Engineering</b>, or would like to request a quote from our team of experts,  <b><a href="">click here</a></b> and tell us who you are.  We will quickly set up your free <b>Smart Parts Buyer</b> account and send you an email when it is ready to go!   Begin shopping for your PMA parts the smart buyer way, and save time and money.</p>
+     
+      </td><td><a href="" /><img src="images/signup.jpg" border = "0" alt="Click here to sign up." /></a></td></tr></table>
+      
+      
+      
+ <p class="ecom_Headline">How Does Smart Parts Buyer Work?</p>
+     
+     <p class="ecom_BodyText">Whether you are new to <b>Jet Parts Engineering</b> or one of our established customers, the <b>Smart Parts Buyer</b> system is ready to meet your needs.  <b>Click on the 'expand' icon to display the panel.</b> </p>
+     
+     
+     
+     <asp:Label ID="lblHomePageHelpPanel" runat="server" />
+     
+</asp:Panel> 
+     
+     <!-- End of Login Panel -->
+    
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+    
+    
+
+<asp:Panel ID="pnlAdminAccountGridview" runat="server">
+    <asp:GridView ID="gvAdminTable" runat="server" AllowPaging="True" AllowSorting="True"
+        DataSourceID="SqlDSAdminGridview" DataKeyNames="pkAccountKey" CellPadding="2"
+        AutoGenerateColumns="False" AutoGenerateSelectButton="False" OnSelectedIndexChanged="gvAdminTable_SelectedIndexChanged">
+        <Columns>
+            <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+            <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName" />
+            <asp:BoundField DataField="Company" HeaderText="Company" SortExpression="Company" />
+            <asp:BoundField DataField="CompanyCode" HeaderText="Code" SortExpression="CompanyCode" />
+            <asp:CheckBoxField DataField="Active" HeaderText="Active" />
+            <asp:BoundField DataField="PricingView" HeaderText="View" />
+            <asp:CheckBoxField DataField="JPEApproved" HeaderText="Approved" />
+            
+            <asp:TemplateField>
+            <ItemTemplate>
+          <%--  <a href onclick="<%# Eval("pkAccountKey", "javasacript:ShowMyAccountModalPopupEvt(&#039;{0}&#039;);") %>">try this</a>
+            --%>
+            
+            
+          <a name='' onclick="javascript:ShowMyAccountModalPopupEvt('ADMIN|<%# Eval("pkAccountKey") %>|RESERVED');"   onmouseover="this.className='SBpodTitleBarOMOver';"  onmouseout="this.className = 'SBpodTitleBarOMOut';">Show Popup</a>
+        
+          
+          <%--  
+            
+            <asp:HyperLink ID="selectionHyperLink" 
+                     runat="server" 
+                      
+                     NavigateUrl='<%# Eval("pkAccountKey", "javasacript:ShowMyAccountModalPopupEvt(&#039;{0}&#039;);") %>'
+                     Text="Select" />--%>
+            </ItemTemplate>
+            </asp:TemplateField>
+            
+            
+        </Columns>
+        <EmptyDataTemplate>
+            No Records to Display</EmptyDataTemplate>
+    </asp:GridView>
+    <asp:SqlDataSource ID="SqlDSAdminGridview" runat="server" ConnectionString="<%$ ConnectionStrings:SQL2005_623673_jetConnectionString %>"
+        SelectCommand="SELECT [pkAccountKey], [FirstName], [LastName], [JobTitle], [Phone], [FAX], [Company], [EmailAddress], [Password], [AccountCreated], [Active], [PricingView], [QuantumCompanyCode], [JPEApproved], [CompanyCode] FROM [ecom_UserAccounts] ORDER BY [LastName], [FirstName]">
+    </asp:SqlDataSource>
+    
+    
+   
+    
+   </asp:Panel>
+    
+    
+    
+    
+     
+    
+    <a  name='' onclick="javascript:ShowMyAccountModalPopupEvt('6');">try this</a>
+    
+    
+    
+ <%--   <a name='' onclick=" + (char)34 + "javascript:ShowMyModalPopupEvt('ModalPopupExtenderPartsDetail', 'NHA|" + strLastNHA + "|" + MySessionId + "', event);" + (char)34 + "  onmouseover=" + (char)34 + "this.className='SBpodTitleBarOMOver';" + (char)34 + "  onmouseout=" + (char)34 + "this.className = 'SBpodTitleBarOMOut';" + (char)34 + ">Associated Parts - NHA: " + strLastNHA + "</a>"
+    --%>
+    
+    
+	 
+	 
+	 
+	 <br />
+	 <br />
+	 
+	 
+	 
+	 
+
+
+
+<asp:Panel ID="pnlCheckoutCartApproved" runat="server">
+<table class='ecomTable'>
+<tr>
+    <td class='SBHeaderBarTD' colspan='3'>
+        Checkout Cart
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortBorderTD'>
+    </td>
+    <td class='GenViewPortContentTD'>
+        <!-- Begin Table Viewport Area -->
+       
+      
+       
+        <table class='GenViewPortTable'>
+            <tr>
+                <td>
+                
+                <asp:Label runat="server" ID="lblCheckoutCart" />
+                
+                
+                   
+                </td>
+            </tr>
+        </table>
+        <!-- End  Table Viewport Area  -->
+    </td>
+    <td class='SBViewPortBorderTD'>
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortFooterTD' colspan='3'>
+    
+        This table will appear when the customer indicates that they are ready to checkout.
+        It is designed to offer a clear, easy to understand, concise overview of the order.
+        The payment / shipping panel will appear below it.
+        
+    </td>
+</tr>
+</table>
+
+
+
+<br />
+<br />
+</asp:Panel>
+
+
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+
+
+
+<asp:Panel ID="pnlChechoutCartNonApproved" runat="server">
+<table class='SBecomTable'>
+<tr>
+<td class='SBHeaderBarTD' colspan='3'>
+    Request For Quote Sent to JPE
+</td>
+</tr>
+<tr>
+<td class='SBViewPortBorderTD'>
+</td>
+<td class='SBViewPortContentTD'>
+    
+    <!-- Begin Table Viewport Area -->
+    <table class='GenViewPortTable'>
+        <tr>
+            <td>
+            
+                             
+    <!-- div class='box'><b class='tc'><b class='L1'></b><b class='L2'></b><b class='L3'></b></b><div class='content' -->
+                   
+                   
+                <table class='cartTable'  style='width:550px;'>
+                    <tr>
+                        <td colspan='9' class='cartRowSpacer'>
+                        </td>
+                    </tr>
+                    <!-- Header Cart Row -->
+                    <tr>
+                       
+                            <td class='cartJPENumberHeader'>
+                                JPE Part No.
+                            </td>
+                            <td class='cartColSpacer'>
+                            </td>
+                            <td class='cartOEMNumberHeader'>
+                                OEM Part No.
+                            </td>
+                            <td class='cartColSpacer'>
+                            </td>
+                            <td class='rfqDescriptionHeader'>
+                                Description
+                            </td>
+                            <td class='cartColSpacer'>
+                            </td>
+                            <td class='cartQtyHeader'>
+                                Qty
+                            </td>
+                           
+                            <tr>
+                                <td colspan='7' class='cartRowSpacer'>
+                                </td>
+                            </tr>
+                            <!-- Cart Row -->
+                            <tr>
+                                
+                                    <td class='cartJPENumber'>
+                                        <a href='#' target='_self'>106772JP</a>
+                                    </td>
+                                    <td class='cartColSpacer'>
+                                    </td>
+                                    <td class='cartOEMNumber'>
+                                        106772
+                                    </td>
+                                    <td class='cartColSpacer'>
+                                    </td>
+                                    <td class='rfqDescription'>
+                                        This is the part description
+                                    </td>
+                                    <td class='cartColSpacer'>
+                                    </td>
+                                    <td class='cartQty'>
+                                        <input type='text' name='txtQTY_Search-Singr44rleMatch_106772' class='SBtxtQtyCntrl'
+                                            id='txtQTY_Search-SingleMat33crrh_106772' maxlength='5' onkeypress='return checkIt(event)'
+                                            value='5'>
+                                    
+                                    </td>
+                                    <tr>
+                                        <td colspan=7' class='cartRowSpacer'>
+                                        </td>
+                                    </tr>
+                                    <!-- Cart Row -->
+                                    <tr>
+                                        
+                                            <td class='cartJPENumber'>
+                                                <a href='#' target='_self'>110968JP</a>
+                                            </td>
+                                            <td class='cartColSpacer'>
+                                            </td>
+                                            <td class='cartOEMNumber'>
+                                                110968
+                                            </td>
+                                            <td class='cartColSpacer'>
+                                            </td>
+                                            <td class='rfqDescription'>
+                                                This is the part description
+                                            </td>
+                                            <td class='cartColSpacer'>
+                                            </td>
+                                            <td class='cartQty'>
+                                                <input type='text' name='txtQTY_Search-SingleMatch_110968' class='SBtxtQtyCntrl'
+                                                    id='txtQTY_Search-SingleMatch_110968' maxlength='5' onkeypress='return checkIt(event)'
+                                                    value='3'>
+                                            </td>
+                                            
+                                            <tr>
+                                                <td colspan='7' class='cartRowSpacer'>
+                                                </td>
+                                            </tr>
+                                            <!-- Cart Row -->
+                                            <tr>
+                                               
+                                                    <td class='cartJPENumber'>
+                                                        <a href='#' target='_self'>362556JP</a>
+                                                    </td>
+                                                    <td class='cartColSpacer'>
+                                                    </td>
+                                                    <td class='cartOEMNumber'>
+                                                        362556
+                                                    </td>
+                                                    <td class='cartColSpacer'>
+                                                    </td>
+                                                    <td class='rfqDescription'>
+                                                        This is the part description
+                                                    </td>
+                                                    <td class='cartColSpacer'>
+                                                    </td>
+                                                    <td class='cartQty'>
+                                                        <input type='text' name='txtQTY_Search-SingleMatch_362556' class='SBtxtQtyCntrl'
+                                                            id='txtQTY_Search-SingleMatch_362556' maxlength='5' onkeypress='return checkIt(event)'
+                                                            value='1'>
+                                                    </td>
+                                                    
+                                            </tr>
+                                            <tr>
+                                                <td colspan='4' class='cartNeutral'>
+                                                </td>
+                                                <td colspan='3' class='cartNeutral' style='text-align: right; margin-right: 0px auto; padding-top:15px; padding-bottom:5px;
+                                                    padding-right: 5px;'>
+                                                    
+                             <asp:Button ID="btnPartsSearchfromRFQ" TabIndex = "3" runat="server" Text="Return to Search Page"  onclick="btnPartsSearchfromRFQ_Click" />  
+                                
+                                                </td>
+                                        
+                                                </tr>
+                </table>
+                
+                
+                    </div>
+    <b class='bc'><b class='L3'></b><b class='L2'></b><b class='L1'></b></b></div>
+        
+
+            </td>
+        </tr>
+    </table>
+    <!-- End  Table Viewport Area  -->
+</td>
+<td class='SBViewPortBorderTD'>
+</td>
+</tr>
+<tr>
+<td class='SBViewPortFooterTD' colspan='3'>
+    This table will appear when the customer indicates that they are ready to checkout.
+    It is designed to offer a clear, easy to understand, concise overview of the order.
+    The payment / shipping panel will appear below it.
+</td>
+</tr>
+</table>
+<br />
+<br />
+</asp:Panel>
+
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+
+<asp:Panel ID="pnlCheckoutSearchMore" runat="server">
+<table class='SBecomTable'>
+<tr>
+    <td class='SBHeaderBarTD' colspan='3'>
+        Order Total and Checkout
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortBorderTD'>
+    </td>
+    <td class='SBViewPortContentTD'>
+        <!-- Begin Table Viewport Area -->
+        <table class='GenViewPortTable'>
+            <tr>
+          
+                <td class='ordDetailsPNLeftTD'>
+                    <table>
+                        <tr>
+                            <td class='companyTDTitle'>
+                                Company
+                            </td>
+                            <td class='itemsTDTitle'>
+                                Items in Cart
+                            </td>
+                            <td class='totalTDTitle'>
+                                Total
+                            </td>
+                             <td class='oneButtonTDTitle'>
+                                 
+                            </td>
+                             <td class='oneButtonTDTitle'>
+                                 
+                            </td>
+                             <td class='oneButtonTDTitle'>
+                               
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='companyTD'>
+                                Delta Airlines
+                            </td>
+                            <td class='itemsTD'>
+                                <% =cartTlQty %>
+                            </td>
+                            <td class='totalTD'>
+                                <% = String.Format("{0:C}", cartTlAmount) %>
+                            </td>
+                              
+                             <td class='oneButtonTD'>
+                               <asp:Button runat="server" ID="btnUpdateSmartBuyer1" onclick="btnUpdateSmartBuyer_Click" Text="Update" />
+                            </td>
+                            
+                             <td class='oneButtonTD'>
+                               <asp:Button runat="server" ID="btnSearchMore" onclick="btnSearchmore_Click" Text="Search More" />
+                            </td>
+                             <td class='oneButtonTD'>
+                               <asp:Button runat="server" ID="btnCheckoutNowTop" onclick="btnCheckoutNow_Click" Text="Checkout" />
+                            </td>
+                            
+                            
+                        </tr>
+                    </table>
+                </td>
+                <!-- td class='ordDetailsPNRightTD'>
+                <nobr>&nbsp; &nbsp;
+                </nobr>
+                
+                 
+                </td -->
+            </tr>
+        </table>
+        <!-- End  Table Viewport Area  -->
+    </td>
+    <td class='SBViewPortBorderTD'>
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortFooterTD' colspan='3'>
+        This panel will be updated by Ajax, and show the running order total.
+    </td>
+</tr>
+</table>
+<br /><br />
+</asp:Panel>
+
+
+
+
+
+
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+<asp:Panel ID="pnlSearchVideoGame" runat="server" >
+    
+         <asp:PlaceHolder runat="server" ID="phSmartBuyerPanel" />
+
+<br /> <br />
+
+
+
+
+    <asp:PlaceHolder runat="server" ID="phSmartBuyerPanelDemo" />
+   
+    <asp:Label runat="server" ID="lblControlList" />
+    
+
+
+
+    <br /><br />
+
+
+
+
+
+  
+  
+
+    
+                        
+              
+ 
+ <br /><br />
+ 
+    
+
+    
+    
+    
+    
+    
+    
+    
+         <asp:GridView ID="gvSearchResults" runat="server" AutoGenerateColumns="false" />
+         <asp:Label ID="lblCaddyTimer" runat="server" />
+         
+         <br />
+         
+
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+         
+</asp:Panel>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<asp:Panel ID="pnlSearchVideoGameNonApproved" runat="server">
+
+
+        <table class='SBecomTable'>
+        <tr>
+            <td class='SBHeaderBarTD' colspan='3'>
+                JPE Smart Parts Buyer - Non Approved Customers - Version 3.0
+            </td>
+        </tr>
+        <td class='SBViewPortBorderTD'>
+        </td>
+        <td class='SBViewPortContentTD'>
+        
+    
+    <div class='box'><b class='tc'><b class='L1'></b><b class='L2'></b><b class='L3'></b></b><div class='content'>
+                   
+                   
+                <table class='SBSingleMatchTable' style='width:535px;margin-left:3px;
+	margin-right:3px;'>
+                    <tr>
+                        <td class='SBpartImageTD' rowspan='2'>
+                            <a name='' onclick="javascript:__doPostBack('btnEditModalParts','')">
+                                <img src='products/thumbnails/110968JP.JPG' width="75" alt='Click to view detailed information about this Part' onmouseover="this.className='SBshowBorder';" onmouseout="this.className='SBnoBorderSingleMatch';" class='SBnoBorderSingleMatch' /></a>
+                        </td>
+                        <!-- top row table -->
+                        <td class='partTopLine1'>
+                            <table>
+                                <tr>
+                                    <td class='SBpartNumberTD'>
+                                        110968JP
+                                    </td>
+                                    <td class='SBreplacesTD'>
+                                    <span class='SBreplacesLabel'>Replaces: </span>
+                                    110968
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class='SBdescriptionTD' colspan='2'>
+                                       This is the description line
+                                    </td>
+
+                                    
+                                    <td class='SBNonApprQtyTD'>
+                                  
+                                     <input type='text' name='txtQTY_Search-NonApproveddd_110968JP' class='SBtxtQtyCntrl' id='Text1' maxlength='5' onkeypress='return checkIt(event)' value="3">
+                           <br />
+                           Qty
+                                    
+                                    </td>
+ 
+                                </tr>
+                            </table>
+                        </td>
+                        <td class='SBmoreInfoTD' rowspan='2'>
+                            <a href='#' target='_self'>
+                                
+                                Click for Details</a>
+                        </td>
+                    </tr>
+                    <!-- end of top row table -->
+                    
+                        </table>
+
+    </div>
+    <b class='bc'><b class='L3'></b><b class='L2'></b><b class='L1'></b></b></div>
+        
+
+    
+        <div class='box'><b class='tc'><b class='L1'></b><b class='L2'></b><b class='L3'></b></b><div class='content'>
+              
+              
+              
+                      <table>
+    <tr><td class='SBpodTitleBar'>No Matched found
+    
+    
+    </td></tr>
+
+<tr><td>
+
+    <table class='SBNoMatchTable' style='margin-top:3px;'>
+                <tr>
+                    <!-- top row table -->
+                    <td>
+                        <table>
+                            <tr>
+                                <td class='SBpartNumberTD'>
+                                    1111ABFS
+                                </td>
+                                <td>
+                                    Not found in our database
+                                </td>
+                                <td>
+                                    &nbsp;
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td rowspan='2'>
+                        &nbsp;
+                    </td>
+                </tr>
+                <!-- end of top row table -->
+        </tr>
+    </table>
+    
+    </td></tr>
+    <tr><td>
+
+    <table class='SBNoMatchTable' style='margin-top:3px;'>
+                <tr>
+                   
+                    <!-- top row table -->
+                    <td>
+                        <table>
+                            <tr>
+                                <td class='SBpartNumberTD'>
+                                    98856X
+                                </td>
+                                <td>
+                                    Not found in our database
+                                </td>
+                                <td>
+                                    &nbsp;
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td rowspan='2'>
+                        &nbsp;
+                    </td>
+                </tr>
+                <!-- end of top row table -->
+        </tr>
+    </table>
+
+
+</td></tr></table>
+
+
+         </div>
+    <b class='bc'><b class='L3'></b><b class='L2'></b><b class='L1'></b></b></div>
+   
+    
+      
+        <!-- End  Table Viewport Area  -->
+    </td><td class='SBViewPortBorderTD'>
+    </td>
+    </tr>
+    <tr>
+        <td class='SBViewPortFooterTD' colspan='3'>
+            This panel is for customers not approved to see pricing
+        </td>
+    </tr>
+    </table>
+    
+     <%-- </div>
+    <b class='bc'><b class='L3'></b><b class='L2'></b><b class='L1'></b></b></div>
+        
+    
+    --%>
+       
+ 
+ <br /><br />
+ 
+    
+
+</asp:Panel>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<asp:Panel ID="pnlApprovedOrderDetails" runat="server">
+<table class='SBecomTable'>
+<tr>
+    <td class='SBHeaderBarTD' colspan='3'>
+        Order Total and Checkout
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortBorderTD'>
+    </td>
+    <td class='SBViewPortContentTD'>
+        <!-- Begin Table Viewport Area -->
+        <table class='GenViewPortTable'>
+            <tr>
+                <td class='ordDetailsPNLeftTD'>
+                    <table>
+                        <tr>
+                            <td class='companyTDTitle'>
+                                Company
+                            </td>
+                            <td class='itemsTDTitle'>
+                                Items in Cart
+                            </td>
+                            <td class='totalTDTitle'>
+                                Total
+                            </td>
+                            <td class='oneButtonTDTitle'>
+                            
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='companyTD'>
+                                Delta Airlines
+                            </td>
+                            <td class='itemsTD'>
+                                8
+                            </td>
+                            <td class='totalTD'>
+                                $4,820.00
+                            </td>
+                            <td class='cartButton'>
+                            
+                <asp:Button runat="server" ID="btnChekoutNow" onclick="btnCheckoutNow_Click" Text="Checkout Now" />
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <!-- td class='ordDetailsPNRightTD'>
+                
+                <asp:Button runat="server" ID="btnChekoussssstNow" onclick="btnCheckoutNow_Click" Text="Checkout Now" />
+                
+                 
+                </td -->
+            </tr>
+        </table>
+        <!-- End  Table Viewport Area  -->
+    </td>
+    <td class='SBViewPortBorderTD'>
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortFooterTD' colspan='3'>
+        This panel will be updated by Ajax, and show the running order total.
+    </td>
+</tr>
+</table>
+<br /><br />
+</asp:Panel>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<asp:Panel ID="pnlNonApprovedOrderDetails" runat="server">
+<table class='SBecomTable'>
+<tr>
+    <td class='SBHeaderBarTD' colspan='3'>
+        RFQ Details
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortBorderTD'>
+    </td>
+    <td class='SBViewPortContentTD'>
+        <!-- Begin Table Viewport Area -->
+        <table class='GenViewPortTable'>
+            <tr>
+                <td class='ordDetailsPNLeftTD' rowspan='2'>
+                    <table>
+                        <tr>
+                            <td class='companyTDTitle'>
+                                Company
+                            </td>
+                            <td class='itemsTDTitle'>
+                                RFQ Items
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='companyTD'>
+                                Aces Repair Service
+                            </td>
+                            <td class='itemsTD'>
+                                8
+                            </td>
+                        </tr>
+                    </table>
+                    <br />
+                    When you submit your request your sales representative will email you the quote.
+                    We lok forward to servicing your PMA needs. Please enter a customer reference number
+                    which will allow you to search for this RFQ at a later date.
+                </td>
+                <td class='rfqDetailsPNRightTopTD'>
+                    Customer Reference #<br />
+                    <input type='text' name='txtRFQRefNo' class='txtBoxControls' id='txtRFQRefNo' maxlength='20'
+                        value=''>
+                </td>
+            </tr>
+            <td class='ordDetailsPNRightTD'>
+                <input type='button' id='btnRequestQuote' type='submit' name='btnRequestQuote' value='Send Quote Request'
+                    onmouseover="this.className='btnhov'" onmouseout="this.className='btn'" class='btn' />
+            </td>
+</tr>
+</table>
+<!-- End  Table Viewport Area  -->
+</td><td class='SBViewPortBorderTD'>
+</td>
+</tr>
+<tr>
+<td class='SBViewPortFooterTD' colspan='3'>
+    This panel will be updated by Ajax, and show the company and the items in the request.
+    It will also contain the 'Checkout Now' button.
+</td>
+</tr>
+</table>
+<br />
+<br />
+</asp:Panel>
+
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+<asp:Panel ID="pnlShippingandPayment" runat="server">
+<table class='SBecomTable'>
+<tr>
+<td class='SBHeaderBarTD' colspan='3'>
+    Shipping and Payment Panel
+</td>
+</tr>
+<tr>
+<td class='SBViewPortBorderTD'>
+</td>
+<td class='SBViewPortContentTD'>
+    <!-- Begin Table Viewport Area -->
+    <table class='GenViewPortTable'>
+        <tr>
+            <td>
+            
+                            
+   
+                   
+
+                <table class='checkoutTable' style='width:538px;'>
+                    <tr>
+                        <td class='checkoutSectionRowTD' colspan='2'>
+                            Purchase Order
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            PO Number
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <asp:TextBox ID='txtPONumber' runat='server' class='txtBoxControls' MaxLength='20'
+                                            Style="width: 100px;" />
+                                    </td>
+                                    <td>
+                                        &nbsp;<asp:FileUpload ID="fileUpload1" runat="server" /><br />
+                                        [Optional] Upload a Purchase Order Document
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutSectionRowTD' colspan='2'>
+                            Shipping
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Carrier
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <asp:DropDownList ID="ddlShipperCarrier" runat="server" OnSelectedIndexChanged="ddlShipperCarrier_SelectedIndexChanged"
+                                AutoPostBack="true" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Shipper ID
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <table>
+                                <tr>
+                                    <td>
+                                        Select Your Shipper ID:
+                                    </td>
+                                    <td>
+                                        <asp:DropDownList ID="ddlMyShipperID" runat="server" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        or Enter a New Shipper ID:
+                                    </td>
+                                    <td>
+                                        <asp:TextBox ID='txtNewShipperID' runat='server' class='txtBoxControls' MaxLength='20' />
+                                        &nbsp;<asp:CheckBox ID='cbSaveNewShipperID' runat='server' />&nbsp;Save to my Profile
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Future Ship Date
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <asp:TextBox ID="txtFutureShipCalendar" runat="server" />
+                            <asp:ImageButton ID="imgBtnFutureCalendar" runat="server" ImageUrl="images/smallCalendar.png" />
+                            <cc1:CalendarExtender ID="celExtFuturDate" runat="server" TargetControlID="txtFutureShipCalendar"
+                                Format="MMMM d, yyyy" PopupButtonID="imgBtnFutureCalendar" PopupPosition="Right" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Ship To Address
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <table>
+                                <tr>
+                                    <td colspan='4'>
+                                        Select Your Ship To Address:
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan='4'>
+                                        <asp:DropDownList ID="ddlMyShipToAddress" runat="server" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan='4'>
+                                        Select Your Ship To Address:
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Address 1
+                                    </td>
+                                    <td colspan='3'>
+                                        <asp:TextBox ID='txtNewShipAddress1' runat='server' class='txtBoxControls' MaxLength='50'
+                                            Style="width: 200px;" />
+                                        &nbsp;<asp:CheckBox ID='cbSaveNewShipToAddress' runat='server' />&nbsp;Save to my
+                                        Profile
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Address 2
+                                    </td>
+                                    <td colspan='3'>
+                                        <asp:TextBox ID='txtNewShipAddress2' runat='server' class='txtBoxControls' MaxLength='50'
+                                            Style="width: 200px;" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        City
+                                    </td>
+                                    <td>
+                                        <asp:TextBox ID='txtNewShipCity' runat='server' class='txtBoxControls' MaxLength='20'
+                                            Style="width: 150px;" />
+                                    </td>
+                                    <td>
+                                        State
+                                    </td>
+                                    <td>
+                                        <asp:TextBox ID='txtNewShipState' runat='server' class='txtBoxControls' MaxLength='20'
+                                            Style="width: 100px;" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Country
+                                    </td>
+                                    <td>
+                                        <asp:TextBox ID='txtNewShipCountry' runat='server' class='txtBoxControls' MaxLength='20'
+                                            Style="width: 100px;" />
+                                    </td>
+                                    <td>
+                                        Zip
+                                    </td>
+                                    <td>
+                                        <asp:TextBox ID='txtNewShipZip' runat='server' class='txtBoxControls' MaxLength='50'
+                                            Style="width: 100px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutSectionRowTD' colspan='2'>
+                            Credit Card Purchases
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Card Type
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <asp:DropDownList ID="ddlCardType" runat="server" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Name on Card
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <asp:TextBox ID="txtCardName" runat="server" MaxLength="50" CssClass="txtBoxControls"
+                                Style="width: 200px;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Card Number
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <input type='text' name='txtCardNumber' class='txtBoxControls' id='txtCardNumber'
+                                maxlength='16' onkeypress='return checkIt(event)' value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Expiration Date
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <input type='text' name='txtExpireMonth' class='txtBoxControls' id='txtExpireMonth'
+                                maxlength='2' onkeypress='return checkIt(event)' value="">
+                            &nbsp;
+                            <input type='text' name='txtExpireYear' class='txtBoxControls' id='txtExpireYear'
+                                maxlength='4' onkeypress='return checkIt(event)' value="">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            CVV Code
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            <input type='text' name='txtCVVCode' class='txtBoxControls' id='txtCVVCode' maxlength='3'
+                                onkeypress='return checkIt(event)' value="">
+                            [3 number code locate on the back of the card]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan='2' class='checkoutRowBorder'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                            Shipping
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            How do we handle shipping on the credit card orders?
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutSectionRowTD' colspan='2'>
+                            Disclaimer
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class='checkoutRowLabelTD'>
+                        </td>
+                        <td class='checkoutRowValueTD'>
+                            I understand that by clicking the 'Place Order' button I am entering into a legally
+                            binding transaction. &nbsp;
+                            <asp:CheckBox ID="cbLegallyBinding" runat="server" />
+                            <br />
+                            <br />
+                            <div style="text-align: right; margin-right: 0px auto; padding-right: 10px.">
+         <asp:Button ID="btnPlaceOrder" TabIndex = "3" runat="server" Text="Place Order" 
+                     onclick="btnPlaceOrder_Click" />  
+                                
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+  
+        
+    
+  
+    <!-- End  Table Viewport Area  -->
+</td>
+<td class='SBViewPortBorderTD'>
+</td>
+</tr>
+<tr>
+<td class='SBViewPortFooterTD' colspan='3'>
+    This table will appear when the customer indicates that they are ready to checkout.
+    It is designed to offer a clear, easy to understand, concise overview of the order.
+    The payment / shipping panel will appear below it.
+</td>
+</tr>
+</table>
+<br />
+<br />
+</asp:Panel>
+
+
+
+
+
+
+
+
+    
+    
+
+<asp:Panel ID="pnlSearchForParts" runat = "server" >
+<table class='SBecomTable'>
+<tr>
+    <td class='SBHeaderBarTD' colspan='3'>
+        <asp:Label ID="lblsearchTitle" runat="server" />
+    </td>
+</tr>
+<tr>
+    <td class='SBViewPortBorderTD'>
+    </td>
+    <td class='SBViewPortContentTD'>
+        <!-- Begin Table Viewport Area -->
+        <table class='GenViewPortTable'>
+            <tr>
+                <td class='SearchPNLeftTD'>
+                    <table class='SearchPNLeftTable'>
+                        <tr>
+                            <td class='SearchLineNumbers'>
+                            </td>
+                </td>
+                <td class='SearchColHeaders'>
+                    Part Number
+                </td>
+                <td class='SearchColHeaders'>
+                    Qty
+                </td>
+            </tr>
+            <tr>
+                <td class='SearchLineNosTD'>
+                    1
+                </td>
+                <td class='SearchPNcontrolTD'>
+                    <input type='text' name='txtSearch_PartNo_1' class='txtPartNoCntrl'
+                        id='txtSearch_PartNo_1' maxlength='20' onkeyup="return submitOnEnter(event, 'btnPartsSearch');">
+                </td>
+                <td class='SearchQTYcontrolTD'>
+                    <input type='text' name='txtSearch_Qty_1' class='SearchtxtQtyCntrl' id='txtSearch_Qty_1'
+                        maxlength='5' onkeypress='return checkIt(event)' onkeyup="return submitOnEnter(event, 'btnPartsSearch');">
+                </td>
+            </tr>
+            <tr>
+                <td class='SearchLineNosTD'>
+                    2
+                </td>
+                <td class='SearchPNcontrolTD'>
+                    <input type='type='text' name='txtSearch_PartNo_2' class='txtPartNoCntrl'
+                        id='txtSearch_PartNo_2' maxlength='20'>
+                </td>
+                <td class='SearchQTYcontrolTD'>
+                    <input type='text' name='txtSearch_Qty_2' class='SearchtxtQtyCntrl' id='txtSearch_Qty_2'
+                        maxlength='5' onkeypress='return checkIt(event)'>
+                </td>
+            </tr>
+            <tr>
+                <td class='SearchLineNosTD'>
+                    3
+                </td>
+                <td class='SearchPNcontrolTD'>
+                    <input type='type='text' name='txtSearch_PartNo_3' class='txtPartNoCntrl'
+                        id='txtSearch_PartNo_3' maxlength='20'>
+                </td>
+                <td class='SearchQTYcontrolTD'>
+                    <input type='text' name='txtSearch_Qty_3' class='SearchtxtQtyCntrl' id='txtSearch_Qty_3'
+                        maxlength='5' onkeypress='return checkIt(event)'>
+                </td>
+            </tr>
+            <tr>
+                <td class='SearchLineNosTD'>
+                    4
+                </td>
+                <td class='SearchPNcontrolTD'>
+                    <input type='type='text' name='txtSearch_PartNo_4' class='txtPartNoCntrl'
+                        id='txtSearch_PartNo_4' maxlength='20'>
+                </td>
+                <td class='SearchQTYcontrolTD'>
+                    <input type='text' name='txtSearch_Qty_4' class='SearchtxtQtyCntrl' id='txtSearch_Qty_4'
+                        maxlength='5' onkeypress='return checkIt(event)'>
+                </td>
+            </tr>
+            <tr>
+                <td class='SearchLineNosTD'>
+                    5
+                </td>
+                <td class='SearchPNcontrolTD'>
+                    <input type='type='text' name='txtSearch_PartNo_5' class='txtPartNoCntrl'
+                        id='txtSearch_PartNo_5' maxlength='20'>
+                </td>
+                <td class='SearchQTYcontrolTD'>
+                    <input type='text' name='txtSearch_Qty_5' class='SearchtxtQtyCntrl' id='txtSearch_Qty_5'
+                        maxlength='5' onkeypress='return checkIt(event)'>
+                </td>
+            </tr>
+        </table>
+    </td>
+    <td class='SearchPNRightTD'>
+        <table class='SearchPNRightTable'>
+            <tr>
+                <td class='excelTD'>
+                    <textarea name="listSearchBox" id="listSearchBox" class="excelTextArea" runat="server" >
+</textarea>
+
+<!-- 3182887JP1
+2803572JP101
+217353JP1
+106711JP
+645133JP2
+214633JP1
+22850915109JP
+3163268JP11
+2793916JP101 -->
+
+                    <br />
+                    Paste your Parts list here.
+                </td>
+            </tr>
+            <tr>
+                <td class='searchGoTD'>Max NHA Items Displayed:&nbsp;&nbsp;<input type='text' name='txtMaxNHA' class='SearchtxtQtyCntrl' id='txtMaxNHA' maxlength='5' onkeypress='return checkIt(event)'>&nbsp;&nbsp;
+                    <asp:Button ID="btnPartsSearch" runat="server" Text="Search"   OnClick="btnPartsSearch_Click" />
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+</table>
+<!-- End  Table Viewport Area  -->
+</td><td class='SBViewPortBorderTD'>
+</td>
+</tr>
+<tr>
+<td class='SBViewPortFooterTD' colspan='3'>
+    Here is where we can enter some text about how to use the controls contained in
+    this panel. We can keep the colors subdued so that the user can choose to read it
+    or ignore it.
+</td>
+</tr>
+</table>
+<br />
+<br />
+</asp:Panel>
+
+
+
+
+
+    
+    
+
+
+   <!-- Can We Help You Panel -->     
+
+<asp:Panel ID="pnlCanWeHelpYou" runat = server >
+    <table class='SBecomTable'>
+        <tr>
+            <td class='SBHeaderBarTD' colspan='3' style="height:2px;">
+            </td>
+        </tr>
+        <tr>
+            <td class='SBViewPortBorderTD'  style="width:2px;">
+            </td>
+            <td class='SBViewPortContentTD'>
+                <!-- Begin Table Viewport Area -->
+                <asp:Label ID="lblSalesPersonTable" runat="server" />
+                <!-- End  Table Viewport Area  -->
+            </td>
+            <td class='SBViewPortBorderTD'  style="width:2px;">
+            </td>
+        </tr>
+        <tr>
+            <td class='SBViewPortFooterTD' colspan='3'  style="height:2px;">
+              
+            </td>
+        </tr>
+    </table>
+    <br />
+    </br></br>
+    </asp:Panel>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+<SCRIPT LANGUAGE="JavaScript" language="javascript">
+    //----------------- lets run the throbber setup for the popup onLoad
+    ecom_PartDetailModal.DeconDetailPanel("", BuildDisplayPanel);
+</SCRIPT>
+   
+   <asp:Button ID="btnPartsSearchfromCart2" 
+        runat="server" 
+        onclick="btnPartsSearchfromCart_Click"
+        style="visibility:hidden;"
+         />
+     
+<asp:Button ID="btnRecalcCart2" 
+        runat="server" 
+        onclick="btnPartsSearchfromCart_Click"
+       style="visibility:hidden;"
+     />
+
+    </ContentTemplate>
+    <Triggers>
+              
+               <asp:AsyncPostBackTrigger ControlID="btnPartsSearchfromCart2" EventName="Click">
+               </asp:AsyncPostBackTrigger>
+                <asp:AsyncPostBackTrigger ControlID="btnRecalcCart2" EventName="Click">
+                </asp:AsyncPostBackTrigger>
+                
+                <asp:AsyncPostBackTrigger ControlID="btnAccountEditPanelSave2" EventName="Click">
+                </asp:AsyncPostBackTrigger>
+            
+            </Triggers>
+        </asp:UpdatePanel>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+       
+    
+        
+        
+        
+       
+     <!-- Forgotten Password Modal Panel -->     
+
+    <asp:Panel ID="mpForgottenPassword" runat="server" CssClass="modalPopupForgottenPassword" >       
+        <asp:UpdatePanel ID="upForgottenPW" runat="server" UpdateMode="Conditional"     >
+        <ContentTemplate>
+        
+        
+         <table class='SBecomTable'>
+         <tr><td class='SBHeaderBarTD' colspan='3' style="height:2px;"></td></tr>
+         <tr><td class='SBViewPortBorderTD' style="width:2px;"></td>
+         <td class='SBViewPortContentTD'>
+         <!-- Begin Table Viewport Area -->  
+         
+          
+		<table class='GenViewPortTable' style="width:400px;">
+		<tr><td>	
+	    <table><tr><td><h3 style="color:#0B2B75;">Password Retrieval</h3 >
+	    <p>If you have lost your password enter the user name of email address currently listed for your account.  Your account details will be emailed to you at that email address.</p></td><td><img src="images/forgotten.gif" border = "0" alt="Forgotten" /></td></tr></table>
+					<br />
+				<table style="ecomLoginTable">
+				    <tr> 
+				    <td style= "login_titles"><asp:Label id="Label1" name="lblUserName" Text="eMail Address" runat="server" /></td>
+				    <td style = "login_controls">
+                    <asp:TextBox ID="txtForgotEmail" runat="server"
+                        Width = "250px"
+                        CssClass = "ecomTextBoxes"
+                        MaxLength = "50"  />
+				    </td>
+				    </tr>
+				    <tr> 
+				    <td style= "login_titles"><asp:Label ID="Label2" name="lblPassword" Text="Username" runat="server" /></td>
+				    <td style = "login_controls"> 
+				    <asp:TextBox ID="txtForgotUserName" runat="server"
+                        Width = "250px"
+                        TabIndex = "2"
+                        CssClass = "ecomTextBoxes"
+                        MaxLength = "30"  />
+                        </td>
+				    </tr>
+				 </table>
+                 <p>
+                 <div style="margin-right:0px auto;text-align:right; padding-right:5px;padding-bottom:5x;padding-top:5px;">
+                   <asp:Button ID="btnForgottenCancel" runat="server"  CausesValidation= "false" Text="Cancel"   OnClick="btnForgottenCancel_Click" /> &nbsp; <asp:Button ID="btnRecoverPassword" runat="server"  CausesValidation= "false" Text="Submit" OnClick="btnRecoverPassword_Click" /> </div>
+                </p>
+                <asp:Label ID="lblPWrecoveryMsg" runat="server"  CssClass="modalMessages" />
+			</td></tr>
+			</table>
+         <!-- End  Table Viewport Area  -->
+         
+         
+         </td><td class='SBViewPortBorderTD' style="width:2px;"></td></tr>
+         <tr><td class='SBViewPortFooterTD' colspan = '3' style="height:2px;"></td></tr>
+         </table>
+         <asp:Label runat="server" ID="lblHiddenDrag2"  style="visibility:hidden"; />
+          </ContentTemplate>   
+          <Triggers><asp:AsyncPostBackTrigger ControlID="btnRecoverPassword" EventName="Click"></asp:AsyncPostBackTrigger></Triggers>
+          </asp:UpdatePanel>         
+        </asp:Panel>
+        <cc1:ModalPopupExtender ID="ModalPopupExtenderForgottenPassword" runat="server"
+            TargetControlID="btnForgottenPassword"
+            PopupControlID="mpForgottenPassword"
+            BackgroundCssClass="modalBackground"
+            RepositionMode="None"
+            Drag = "false"
+            BehaviorID="behaveForgotten"
+            PopupDragHandleControlID="lblHiddenDrag2"
+            DropShadow="True"
+            dynamicServicePath=""
+            Enabled="True" />
+        <asp:Button runat="server" ID="btnForgottenPassword" Text="" style="visibility:hidden;" />
+			
+		
+                 
+
+                 
+                 
+                 
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         <!-- Parts and NHA Detail Modal Panel  -->     
+        <asp:Panel ID="mpPartsDetail" runat="server" CssClass="modalPopupParts" >
+        <asp:Label runat = "server" ID="lblPartsPopupAJAX" />
+        <asp:Label runat="server" ID="lblNoDragDummy1"  style="visibility:hidden"; />
+        </asp:Panel>
+        <cc1:ModalPopupExtender ID="ModalPopupExtenderPartsDetail" runat="server"
+            TargetControlID="btnEditModalParts"
+            PopupControlID="mpPartsDetail"
+            BackgroundCssClass="modalBackground"
+            RepositionMode="None"
+            drag="false"
+            PopupDragHandleControlID="lblNoDragDummy1"
+            DropShadow="False"
+            Enabled="True" />
+       <asp:Button runat="server" ID="btnEditModalParts" Text="" style="visibility:hidden;" />
+                  
+                
+         
+         
+
+
+
+
+
+
+
+
+
+	<!-- Account Admin Table  -->
+	<asp:Panel ID="mpAccountUpdate" runat="server" CssClass="modalPopupEditAccount">
+	<asp:Panel ID="accountScrollPanel" runat="server" ScrollBars="auto" class="accountScrollPanel" >
+
+	
+	<%
+        string strPanelmode = Page.Session["pkAccountType"].ToString().ToLower();
+        //string strPanelMode = "admin";
+	       
+        //bool blnPanelNew = true;
+        //if (blnPanelNew)
+        //{   
+	 
+	 %>
+	 
+	 
+	 	<table><tr><td><img src="images/logo-JPE_000.gif" border="0" alt="JPE" /></td><td><td style="margin-right: 5px auto; text-align:right;font:verdana;color:#999999;font-size:9px;padding-bottom:15px;"><asp:ImageButton ID="ibCloseAccountUpdate" runat="server" ImageUrl="images/close.png"  /><br /><a name onclick="javascript: return doButtonClick('ibCloseAccountUpdate')">Save Changes and Close Panel </a></td></td></tr></table>
+	 	
+
+         
+         
+       
+       
+       
+         <!-- Begin Table Viewport Area -->  
+         
+         <asp:Label ID="lblAccountAJAX" runat="server" />
+         
+    
+    <table class='nwAccountTable'>
+    <tr><td class='nwAccountLeftTD'>Profile</td>
+    <td class='nwAccountRightTD'>
+  
+        <table>
+        
+        <tr><td class='nwSubTDLabels'>First Name</td><td class='nwSubTdContent'><input type='text' ID='txt_FirstName' name='txt_FirstName' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' /> </td><td class='nwSubTDLabels'>Last Name</td><td class='nwSubTdContent'><input type='text' ID='txt_LastName' name='txt_LastName' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' /> </td></tr>
+        
+        <tr><td class='nwSubTDLabels'>Company</td><td class='nwSubTdContent'><input type='text' ID='txt_Company' name='txt_Company' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td><td class='nwSubTDLabels'>Job Title</td><td class='nwSubTdContent'><input type='text' ID='txt_JobTitle' name='txt_JobTitle' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' />
+        
+           <tr><td class='nwSubTDLabels'>Phone</td><td class='nwSubTdContent'><input type='text' ID='txt_Phone' name='txt_Phone' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td><td class='nwSubTDLabels'>FAX</td><td class='nwSubTdContent'><input type='text' ID='txt_Fax' name='txt_Fax' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '50' />
+           
+           <tr><td class='nwSubTDLabels'>eMail Address</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_eMail' name='txt_eMail' style='width:250px;' Class = 'ecomTextBoxes'  MaxLength = '50' />
+        
+          <input type = 'hidden' id = 'hdn_FirstName' value ='' />
+          <input type = 'hidden' id = 'hdn_LastName' value ='' />
+          <input type = 'hidden' id = 'hdn_Company' value ='' />
+          <input type = 'hidden' id = 'hdn_JobTitle' value ='' />
+          
+          <input type = 'hidden' id = 'hdn_Phone' value ='' />
+          <input type = 'hidden' id = 'hdn_FAX' value ='' />
+          <input type = 'hidden' id = 'hdn_eMail' value ='' />
+          
+        </td></tr>
+        </table>
+    
+    </td></tr>
+    
+       
+    <tr><td class='nwAccountLeftTD'>Password Change</td>
+    <td class='nwAccountRightTD'>
+  
+        <table>
+         
+        <tr><td class='nwSubTDLabels'>Old<br /> Password</td><td class='nwSubTdContent'><input type='password' ID='txtOldPassword' name='txtOldPassword' style='width:80px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td><td class='nwSubTDLabels'>New<br />Password</td><td class='nwSubTdContent'><input type='password' ID='txtNewPassword' name='txtNewPassword' style='width:80px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td><td class='nwSubTDLabels'>Verify</td><td class='nwSubTdContent'><input type='password' ID='txtVerify' name='txtVerify' style='width:80px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td></tr>
+        
+        <tr><td colspan= '6'>
+        
+        
+        
+        
+        
+        
+        
+        </td></tr>
+       
+        </table>
+        
+    
+    </td></tr>
+    
+    
+    
+    
+       
+    <tr><td class='nwAccountLeftTD'>Billing Address</td>
+    <td class='nwAccountRightTD'>
+  
+        <table>
+         
+        <tr><td class='nwSubTDLabels'>Address 1</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_Address1' name='txt_Address1' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+   
+   <tr><td class='nwSubTDLabels'>Address 2</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_Address2' name='txt_Address2' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+   
+    <tr><td class='nwSubTDLabels'>Address 3</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_Address3' name='txt_Address3' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+    
+      
+    <tr><td class='nwSubTDLabels'>City</td><td class='nwSubTdContent'><input type='text' ID='txt_City' name='txt_City' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td>
+    <td class='nwSubTDLabels'>State</td><td class='nwSubTdContent' ><input type='text' ID='txt_State' name='txt_State' style='width:50px;' Class = 'ecomTextBoxes'  MaxLength = '10' /></td>
+    
+    
+    <tr><td class='nwSubTDLabels'>Country</td><td class='nwSubTdContent'><input type='text' ID='txt_Country' name='txt_Country' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td>
+    <td class='nwSubTDLabels'>Zip Code</td><td class='nwSubTdContent' ><input type='text' ID='txt_Zip' name='txt_Zip' style='width:50px;' Class = 'ecomTextBoxes'  MaxLength = '10' />
+    
+    <input type = 'hidden' id = 'hdn_Address1' value ='' />
+    <input type = 'hidden' id = 'hdn_Address2' value ='' />
+    <input type = 'hidden' id = 'hdn_Address3' value ='' />
+    <input type = 'hidden' id = 'hdn_City' value ='' />
+    <input type = 'hidden' id = 'hdn_State' value ='' />
+    <input type = 'hidden' id = 'hdn_Country' value ='' />
+    <input type = 'hidden' id = 'hdn_Zip' value ='' />
+    
+    </td>
+    </tr>
+  
+  
+       
+        </table>
+        
+    
+    </td></tr>
+    
+    
+    
+    
+    
+    <tr><td class='nwAccountLeftTD'>Shipping Addresses</td>
+    <td class='nwAccountRightTD'>
+    
+    <div class='nwAcctInstructionDiv'>Current Shipping address[s]:</div>
+    <ol>
+    <li>123 Elm Street, Suite 310, AnyTown, New Jersey, 98111
+    </ol>
+    
+    
+    <div class='nwAcctInstructionDiv'>Add a ship To Address:</div>
+    
+    
+  
+        <table>
+         
+        <tr><td class='nwSubTDLabels'>Address 1</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_shipAddress1' name='txt_Address1' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+   
+   <tr><td class='nwSubTDLabels'>Address 2</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_shipAddress2' name='txt_shipAddress2' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+   
+    <tr><td class='nwSubTDLabels'>Address 3</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_shipAddress3' name='txt_shipAddress3' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+    
+      
+    <tr><td class='nwSubTDLabels'>City</td><td class='nwSubTdContent'><input type='text' ID='txt_shipCity' name='txt_shipCity' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td>
+    <td class='nwSubTDLabels'>State</td><td class='nwSubTdContent' ><input type='text' ID='txt_shipState' name='txt_shipState' style='width:50px;' Class = 'ecomTextBoxes'  MaxLength = '10' /></td>
+    
+    
+    <tr><td class='nwSubTDLabels'>Country</td><td class='nwSubTdContent'><input type='text' ID='txt_shipCountry' name='txt_shipCountry' style='width:150px;' Class = 'ecomTextBoxes'  MaxLength = '20' /></td>
+    <td class='nwSubTDLabels'>Zip Code</td><td class='nwSubTdContent' ><input type='text' ID='txt_shipZip' name='txt_shipZip' style='width:50px;' Class = 'ecomTextBoxes'  MaxLength = '10' />
+
+    </td>
+    </tr>
+  
+        </table>
+
+    </td></tr>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <tr><td class='nwAccountLeftTD'>Shipping Account IDs</td>
+    <td class='nwAccountRightTD'>
+    
+    <div class="nwAcctInstructionDiv">Current Shipping Account IDs:</div>
+    <ol>
+    <li>UPS FRD9Y9
+    </ol>
+
+    <div class="nwAcctInstructionDiv">Add a New Shipper ID:</div>
+    
+        <table>
+         
+        <tr><td class='nwSubTDLabels'>Company</td><td class='nwSubTdContent' colspan = '3'>ddl here</td>
+   
+   <tr><td class='nwSubTDLabels'>Account Number</td><td class='nwSubTdContent' colspan = '3'><input type='text' ID='txt_NewShipperAccount' name='txt_NewShipperAccount' style='width:300px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+ 
+    </td>
+    </tr>
+ 
+    </table>
+        
+    
+    </td></tr>
+    
+    
+      
+    
+    
+    <tr><td class='nwAccountLeftTD'>Account Terms</td>
+    <td class='nwAccountRightTD'>
+
+    Net 30
+
+    </td></tr>
+    
+    
+    
+    
+    
+    
+    <tr><td class='nwAccountLeftTD'>Note to JPE</td>
+    <td class='nwAccountRightTD'>
+    
+    <div class='nwAcctInstructionDiv'><p>When change your profile information, billing address, add a ship to address or shipper ID, your sales representative at Jet Parts Engineering is notified of the change so that out in-house order control and delivery system can be updated.  Please allow up to one business day for changes to take effect.  You can also enter a new ship to address or shipper ID when you place an order.</p><p>Please use the textbox below to add any comments or clarifications regarding the changes you made.</p></p></div>
+    
+    
+    <textarea id='txt_Notes' name='txt_Notes' style='height:150px;width:500px'> </textarea>
+    
+        
+    
+    </td></tr>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <tr><td class='nwAccountLeftTD'>JPE Office Use</td>
+    <td class='nwAccountRightTD'>
+    
+    <div class='nwAcctInstructionDiv'>Account Information:</div>
+    <ul>
+    <li>Account Created: 1/1/1900</li>
+    <li>eMail Validated: 1/1/1900</li>
+    <li>Account type: user</li>
+    </ul>
+    
+     
+  
+        <table>
+         
+        <tr><td class='nwSubTDLabels' style='width:80px;'>Approved</td><td class='nwSubTdContent' ><input type='checkbox' ID='chk_Approved' name='chk_Approved' /></td><td class='nwSubTDLabels'>Active</td><td class='nwSubTdContent'><input type='checkbox' ID='chk_Active' name='chk_Active' /></td>
+        <td class='nwSubTDLabels'>Send eMail</td><td class='nwSubTdContent'><input type='checkbox' ID='chk_SendEmail' name='chk_SendEmail' /></td> <td class='nwSubTDLabels'>Delete Account</td><td class='nwSubTdContent'><input type='checkbox' ID='chk_DeleteAccount' name='chk_DeleteAccount' /></td>
+        
+        </tr>
+
+   <tr><td class='nwSubTDLabels' style='width:80px;'>Quantum Company Code</td><td class='nwSubTdContent' colspan = '7'><input type='text' ID='txt_QuantumCode' name='txt_QuantumCode' style='width:100px;' Class = 'ecomTextBoxes'  MaxLength = '50' /></td></tr>
+   
+   
+      <tr><td class='nwSubTDLabels'  style='width:80px;'>JPE Quick Note</td><td class='nwSubTdContent' colspan = '7'>
+      
+       <textarea id='txt_JPENotes' name='txt_JPENotes' style='height:150px;width:400px'> </textarea>
+       
+       </td>
+   
+   
+  
+        </table>
+
+    </td></tr>
+   
+    </table>   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div style='padding:20px; margin-right:10px auto; text-align:right'>
+    
+           <asp:Button ID="btnAccountEditPanelSave2" runat="server"  CausesValidation = "False" Text="Save Changes and Close" OnClick="btnAccountEditPanelSave2_Click" />
+           </div>
+   
+ 
+	<asp:Label runat="server" ID="lblHiddenDrag3"  style="visibility:hidden"; />
+
+	</asp:Panel>
+    </asp:Panel>
+        <br />
+        <cc1:ModalPopupExtender ID="ModalPopupExtenderAccountUpdate" runat="server"
+            TargetControlID="btnEditAccount"
+            PopupControlID="mpAccountUpdate"
+            BackgroundCssClass="modalBackground"
+            CancelControlID="ibCloseAccountUpdate"
+            RepositionMode="None"
+            Drag = "false"
+            PopupDragHandleControlID="lblHiddenDrag3"
+            DropShadow="False"
+            Enabled="True" />
+    <asp:Button runat="server" ID="btnEditAccount" Text="" style="visibility:hidden;"  />
+  
+  
+  
+  
+    
+        	<!-- Throbber Modal Popup  -->
+        <asp:UpdatePanel ID="upPnlThrobber" runat="server" UpdateMode="Conditional" >
+<ContentTemplate>
+         <asp:Panel ID="mpThrobber" runat="server" CssClass="modalPopupThrobber" >
+        <center>
+        <asp:Image ID="imgThrobber" runat="server"  ImageUrl="images/progressbar.gif" />
+		</center>
+		</asp:Panel>
+        <cc1:ModalPopupExtender ID="ModalPopupExtenderThrobber" runat="server"
+            TargetControlID="btnShowThrobber"
+            PopupControlID="mpThrobber"
+            BackgroundCssClass="modalBackground"
+            RepositionMode="None"
+            Drag = "false"
+            PopupDragHandleControlID="none"
+            DropShadow="False"
+            dynamicServicePath=""
+            BehaviorID="behaveThrobber"
+            Enabled="True" />
+        <asp:Button ID="btnShowThrobber" runat="server" style="visibility:hidden;" /> 
+       </ContentTemplate>
+       </asp:UpdatePanel>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+	<!-- Help PopUp  -->
+	<asp:Panel ID="mpHelp" runat="server" CssClass="modalPopupEditAccount">
+	<asp:Panel ID="scrollPanelHelp" runat="server" ScrollBars="Vertical" class="helpScrollPanel" >
+ 
+        <table style="width:100%;vertical-align:top;width:90%;"><tr><td><img src="images/logo-JPE_000.gif" border="0" alt="JPE" /</td><td style="margin-right: 5px auto; text-align:right;font:verdana;color:#999999;font-size:9px;padding-bottom:15px;"><asp:ImageButton ID="ibCloseHelp" runat="server" ImageUrl="images/close.png"  /><br /><a name onclick="javascript: return doButtonClick('ibCloseHelp')">Close Help</a></td></tr>
+        
+        <tr><td colspan = "2">
+           <hr color="#999999" width = "100%" />
+        
+         <p class="ecom_BodyText">We are proud to introduce <b>Smart Parts Buyer</b>, our innovative, easy-to-use, intuitive B2B <i>[business to business]</i> eCommerce system designed by our engineers from the ground up to give you the best possible on-line buying experience. </p>
+         
+         <p class="ecom_BodyText">Click on the section heads below to read more about How to best use your new Smart Parts Buyer system.</p>
+         
+         <hr color="#999999" width = "100%" />
+
+        <asp:Label ID="lblModalHelp" runat="server" />
+        </td> 
+
+        </tr></table>
+	
+	<asp:Label runat="server" ID="lblHiddenDrag4"  style="visibility:hidden"; />
+
+	</asp:Panel>
+    </asp:Panel>
+        <br />
+        <cc1:ModalPopupExtender ID="ModalPopupExtenderHelp" runat="server"
+            TargetControlID="btnShowHelp"
+            PopupControlID="mpHelp"
+            BackgroundCssClass="modalBackground" 
+            CancelControlID="ibCloseHelp"
+            RepositionMode="None"
+            Drag = "false"
+            PopupDragHandleControlID="lblHiddenDrag4"
+            DropShadow="True"
+            dynamicServicePath=""
+            Enabled="True" />
+    <asp:Button runat="server" ID="btnShowHelp" Text="" style="visibility:hidden;"  />
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  
+
+ 
+  
+  
+  
+  
+  </div>
+  </center>
+  </td></tr>
+  
+  
+  
+  
+  
+  
+			
+			
+			
+		</table>
+	</div>
+			
+	
+<!--#include file="footer.inc"-->
+     
+
+ 
+  
+<asp:Label ID="lblORAerror" runat="server" />
+<asp:Label ID="lblWCFOutput" runat="server" />
+
+
+ 
+
+    <br />
+    
+    
+
+
+</div></form>
+
+</body>
+
+
+
+
+
+</html>

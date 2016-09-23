@@ -1,0 +1,69 @@
+﻿
+Delta Problem notes:
+
+This algorithm produces the same reults as Leah  2029 parts -  
+
+
+select p.pn, p.description, stc_auto_key --, atc_auto_key
+
+from parts_master p
+--from alternates_parts_master a 
+--join parts_master p on a.alt_pnm_auto_key = p.pnm_auto_key 
+
+WHERE (P.STC_AUTO_KEY = 2 OR P.STC_AUTO_KEY = 3 OR P.STC_AUTO_KEY = 4 OR
+P.STC_AUTO_KEY = 6 OR   P.STC_AUTO_KEY = 10  OR P.STC_AUTO_KEY = 11 OR
+P.STC_AUTO_KEY = 12 OR P.STC_AUTO_KEY = 20  ) 
+ 
+/* AND (A.ATC_AUTO_KEY != 6 OR A.ATC_AUTO_KEY IS NULL) */ 
+
+order by p.pn
+
+
+this produces 2049 parts:
+
+
+select p.pn, p.description, stc_auto_key --, atc_auto_key
+
+
+from parts_master p
+left outer join alternates_parts_master a on a.alt_pnm_auto_key = p.pnm_auto_key 
+
+WHERE (P.STC_AUTO_KEY = 2 OR P.STC_AUTO_KEY = 3 OR P.STC_AUTO_KEY = 4 OR
+P.STC_AUTO_KEY = 6 OR   P.STC_AUTO_KEY = 10  OR P.STC_AUTO_KEY = 11 OR
+P.STC_AUTO_KEY = 12 OR P.STC_AUTO_KEY = 20  ) 
+ 
+AND (A.ATC_AUTO_KEY != 6 OR A.ATC_AUTO_KEY IS NULL) 
+
+order by p.pn
+
+
+
+
+
+
+
+
+
+
+
+       <div id="leftNavBarMainMenu" class="WS_LeftNavBar_MainMenu_div">
+
+       <a href="default.aspx" onmouseover="document.mmenu_home.src='images/menuHome_rollever.png';" onmouseout="document.mmenu_home.src='images/menuHome_active.png';"><img src="images/menuHome_active.png" id="mmenu_home" name="mmenu_home" alt="Home Page" border="0"/></a><br />
+       
+        <a href="about.aspx" onmouseover="document.mmenu_about.src='images/menuAbout_rollover.png';" onmouseout="document.mmenu_about.src='images/menuAbout_active.png';"><img src="images/menuAbout_active.png" id="mmenu_about" name="mmenu_about" alt="About Jet Parts Engineering" border="0"/></a><br />
+      
+              <a href="ecom_prodSearch.aspx" onmouseover="document.mmenu_products.src='images/menuProducts_rollover.png';" onmouseout="document.mmenu_products.src='images/menuProducts_active.png';"><img src="images/menuProducts_active.png" id="mmenu_products" name="mmenu_products" alt="JPE PMA Products" border="0"/></a><br />
+      
+              <a href="contact.aspx" onmouseover="document.mmenu_contact.src='images/menuContact_rollover.png';" onmouseout="document.mmenu_contact.src='images/menuContact_active.png';"><img src="images/menuContact_active.png" id="mmenu_contact" name="mmenu_contact" alt="Contact Jet Parts Engineering" border="0"/></a><br />
+      
+      </div>
+      
+     <div id="leftNavBarSubMenu" class="WS_LeftNavBar_SubMenu_div">
+      </div>
+      
+      
+     <div id="ViewPortDiv" class="WS_ViewPort_div">
+    <asp:ContentPlaceHolder id="ViewPortContent" runat="server">
+        </asp:ContentPlaceHolder>
+      </div>
+      

@@ -1,0 +1,186 @@
+﻿// History.js
+// Copyright (c) Nikhil Kothari, 2006
+// http://www.nikhilk.net
+//
+// This sample's copyrights are licensed under the Creative
+// Commons Attribution-ShareAlike (version 2.5).
+// http://creativecommons.org/licenses/by-sa/2.5/
+//
+// You are free to:
+// - copy, distribute, display, and perform the work 
+// - make derivative works 
+// - make commercial use of the work 
+// Under the following conditions:
+// Attribution. You must attribute the original work in your
+//              product or release.
+// Share Alike. If you alter, transform, or build upon this work,
+//              you may distribute the resulting work only under
+//              a license identical to this one.
+//
+
+Sys.HistoryEventArgs = function(entry) {
+
+    var _entry = entry;
+
+    this.get_entry = function() {
+        return _entry;
+    }
+}
+Sys.HistoryEventArgs.registerSealedClass('Sys.HistoryEventArgs', Sys.EventArgs);
+
+
+Sys._History = function(historyIFrame) {
+    Sys.Runtime.registerDisposableObject(this);
+
+    var _historyIFrame = historyIFrame;
+    var _emptyPageURL;
+    var _ignoreIFrame = true;
+    var _ignoreTimer = false;
+    var _currentEntry = '';
+    
+    var _appLoadHandler;
+    var _idleHandler;
+    var _iframeLoadHandler;
+
+    var _idleTimerCookie = 0;
+    
+    this.navigated = new Type.Event(this);
+    
+    this.back = function() {
+        window.history.back();
+    }
+
+    this.addEntry = function(entry) {
+        _ignoreTimer = true;
+        if (_historyIFrame) {
+            _ignoreIFrame = true;
+            _historyIFrame.src = _emptyPageURL + entry;
+        }
+        else {
+            setCurrentEntry(entry);
+        }
+    }
+    
+    this.dispose = function() {
+        Sys.Runtime.unregisterDisposableObject(this)
+
+        if (_historyIFrame) {
+            _historyIFrame.detachEvent('onload', _iframeLoadHandler);
+        }
+
+        if (_idleTimerCookie) {
+            window.clearTimeout(_idleTimerCookie);
+            _idleTimerCookie = 0;
+        }
+        
+        _iframeLoadHandler = null;
+    }
+    
+    this.forward = function() {
+        window.history.forward();
+    }
+    
+    function getCurrentEntry() {
+        var entry = window.location.hash;
+        if ((entry.length >= 1) && (entry.charAt(0) == '#')) {
+            entry = entry.substring(1);
+        }
+        return entry;
+    }
+    
+    function setCurrentEntry(entry) {
+        _currentEntry = entry;
+        window.location.hash = entry;
+    }
+    
+    this._onApplicationLoad = function(sender, eventArgs) {
+        Sys.Application.load.remove(_appLoadHandler);
+        _appLoadHandler = null;
+
+        _idleTimerCookie = window.setTimeout(_idleHandler, 100);
+        if (_historyIFrame) {
+            _ignoreIFrame = false;
+            
+            _emptyPageURL = _historyIFrame.src + '?';
+
+            _iframeLoadHandler = Function.createDelegate(this, this._onIFrameLoad);
+            _historyIFrame.attachEvent('onload', _iframeLoadHandler);
+        }
+        
+        _currentEntry = getCurrentEntry();
+        this._onNavigated(_currentEntry);
+    }
+    
+    this._onIFrameLoad = function() {
+        var entry = _historyIFrame.contentWindow.location.search;
+        if ((entry.length >= 1) && (entry.charAt(0) == '?')) {
+            entry = entry.substring(1);
+        }
+        
+        setCurrentEntry(entry);
+        if (_ignoreIFrame) {
+            _ignoreIFrame = false;
+            return;
+        }
+        
+        this._onNavigated(entry);
+    }
+    
+    this._onNavigated = function(entry) {
+        this.navigated.invoke(this, new Sys.HistoryEventArgs(entry));
+    }
+
+    this._onIdle = function() {
+        _idleTimerCookie = 0;
+
+        var entry = getCurrentEntry();
+        if (entry != _currentEntry) {
+            if (!_ignoreTimer) {
+                _currentEntry = entry;
+                this._onNavigated(entry);
+            }
+        }
+        else {
+            _ignoreTimer = false;
+        }
+        _idleTimerCookie = window.setTimeout(_idleHandler, 100);
+    }
+
+    _idleHandler = Function.createDelegate(this, this._onIdle);    
+    _appLoadHandler = Function.createDelegate(this, this._onApplicationLoad);
+
+    Sys.Application.load.add(_appLoadHandler);
+}
+Sys._History.registerSealedClass('Sys._History', null, Sys.IDisposable);
+
+Sys._History.getInstance = function() {
+    if (!Sys._History.Instance) {
+        var historyFrame = null;
+        if (Sys.Runtime.get_hostType() == Sys.HostType.InternetExplorer) {
+            historyFrame = document.getElementById('__historyFrame');
+        }
+
+        Sys._History.Instance = new Sys._History(historyFrame);
+    }
+    return Sys._History.Instance;
+}
+
+Sys.HistoryTracker = function() {
+
+    function onHistoryNavigated(sender, eventArgs) {
+        var entry = eventArgs.get_entry();
+        if ((entry != null) && (entry.length != 0)) {
+            __doPostBack(window.historyTarget, entry);
+        }
+    }
+    Sys._History.getInstance().navigated.add(onHistoryNavigated);
+    
+    this.addEntry = function(e) {
+        Sys._History.getInstance().addEntry(e);
+    }
+}
+Sys.HistoryTracker.registerSealedClass('Sys.HistoryTracker');
+
+if (!window.historyTracker) {
+    window.historyTracker = new Sys.HistoryTracker();
+}

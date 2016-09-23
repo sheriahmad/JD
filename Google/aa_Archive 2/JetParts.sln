@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "JetParts", ".", "{3FD2F8A2-625D-4DC8-A03C-4D4F855D5939}"
+	ProjectSection(WebsiteProperties) = preProject
+		SccProjectName = "Svn"
+		SccAuxPath = "Svn"
+		SccLocalPath = "Svn"
+		SccProvider = "SubversionScc"
+		TargetFramework = "3.5"
+		Debug.AspNetCompiler.VirtualPath = "/JetParts"
+		Debug.AspNetCompiler.PhysicalPath = "..\JetParts\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\JetParts\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/JetParts"
+		Release.AspNetCompiler.PhysicalPath = "..\JetParts\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\JetParts\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "4898"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JPEReferenceMaterials", "..\JPEReferenceMaterials\JPEReferenceMaterials.csproj", "{F45793EA-075F-47A5-AEE1-381551C83006}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3FD2F8A2-625D-4DC8-A03C-4D4F855D5939}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FD2F8A2-625D-4DC8-A03C-4D4F855D5939}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FD2F8A2-625D-4DC8-A03C-4D4F855D5939}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FD2F8A2-625D-4DC8-A03C-4D4F855D5939}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{F45793EA-075F-47A5-AEE1-381551C83006}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F45793EA-075F-47A5-AEE1-381551C83006}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F45793EA-075F-47A5-AEE1-381551C83006}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

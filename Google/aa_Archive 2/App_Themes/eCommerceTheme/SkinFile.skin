@@ -1,0 +1,42 @@
+﻿<%--
+Default skin template. The following skins are provided as examples only.
+
+1. Named control skin. The SkinId should be uniquely defined because
+   duplicate SkinId's per control type are not allowed in the same theme.
+
+<asp:GridView runat="server" SkinId="gridviewSkin" BackColor="White" >
+   <AlternatingRowStyle BackColor="Blue" />
+</asp:GridView>
+
+2. Default skin. The SkinId is not defined. Only one default 
+   control skin per control type is allowed in the same theme.
+
+<asp:Image runat="server" ImageUrl="~/images/image1.jpg" />
+--%>
+
+
+<%-- Default: GridView --%>
+<asp:GridView CellPadding="2" runat="server" Width="100%" style="margin-top:10px;">
+	<HeaderStyle CssClass="grvHead" />
+	<SelectedRowStyle cssclass="grvSelected" />    
+	<AlternatingRowStyle CssClass="grvAlternating" />
+	<PagerStyle BackColor="#d3d3d3" />
+	<FooterStyle CssClass="grvFooter" />
+
+	<EmptyDataTemplate>No records available</EmptyDataTemplate>
+</asp:GridView>
+
+<%-- Default: DetailsView --%>
+<asp:DetailsView runat="server" CellPadding="3" ForeColor="#333333" 
+Width="100%" EmptyDataText="No records available" style="margin-top:10px;">
+	<HeaderStyle CssClass="grvDetailHead" />
+	<CommandRowStyle CssClass="grvCmd" />
+	<FieldHeaderStyle CssClass="right grvFieldHead"   />
+	<AlternatingRowStyle CssClass="grvAlternating" />
+	
+</asp:DetailsView>
+
+<%-- Default: Text Box --%>
+<asp:TextBox Font-Size="8pt" font-names="Verdana" BackColor="#FFFFFF" runat="server" /> 
+
+

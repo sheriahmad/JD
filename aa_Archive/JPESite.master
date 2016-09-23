@@ -1,0 +1,324 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="JPESite.master.cs" Inherits="MasterPage"  EnableTheming = "true" %>
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+
+<script src="js/balloon.config.js" type="text/javascript"></script>
+<script src="js/balloon.js" type="text/javascript"></script>
+<script src="js/box.js" type="text/javascript"></script>
+<script src="js/yahoo-dom-event.js" type="text/javascript"></script>
+
+
+
+<script src="js/ecom.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+<!--
+
+    function JPEmenuRoll(img_name, img_src, sub_name, sub_status, action) {
+
+        var myMmenu = document.getElementById("Mmenu").value;
+        var mySmenu = document.getElementById("Smenu").value;
+
+        if (img_name != "") {
+
+            document[img_name].src = img_src;
+
+            closeSubs();
+            if (sub_status != "") {
+                var myDiv = document.getElementById(sub_name);
+                myDiv.style.display = sub_status;
+            }
+        }
+
+        //if (action == "out"  || action == "in") {
+            switch (myMmenu) {
+                case "home":
+                    document["mmenu_home"].src = "images/menuHome_rollever.png";
+                    break;
+                case "about":
+                    closeSubs();
+                    document.getElementById("aboutSubMenu").style.display = "inline";
+                    document["mmenu_about"].src = "images/menuAbout_rollover.png";
+                    break;
+                case "products":
+                    closeSubs();
+                    document.getElementById("productsSubMenu").style.display = "inline";
+                    document["mmenu_products"].src = "images/menuProducts_rollover.png";
+                    break;
+                case "contact":
+                     closeSubs();
+                     document.getElementById("contactSubMenu").style.display = "inline";
+                     document["mmenu_contact"].src = "images/menuContact_rollover.png";
+                    break;
+            }
+            switch (mySmenu) {
+                case "letter":
+                    closeSubs();
+                    document.getElementById("aboutSubMenu").style.display = "inline";
+                    document["aboutmenu_letter"].src = "images/subLetter_rollover.png";
+                    break;
+                case "history":
+                    closeSubs();
+                    document.getElementById("aboutSubMenu").style.display = "inline";
+                    document["aboutmenu_history"].src = "images/subHistory_rollover.png";
+                    break;
+                case "news":
+                    closeSubs();
+                    document.getElementById("aboutSubMenu").style.display = "inline";
+                    document["aboutmenu_news"].src = "images/subNews_rollover.png";
+                    break;
+                case "philanthropy":
+                    closeSubs();
+                    document.getElementById("aboutSubMenu").style.display = "inline";
+                    document["aboutmenu_philanthropy"].src = "images/subPhilanthropy_rollover.png";
+                    break;
+                case "capabilities":
+                    closeSubs();
+                    document.getElementById("productsSubMenu").style.display = "inline";
+                    document["productsmenu_capabilities"].src = "images/subCapabilities_rollover.png";
+                    break;
+                case "online":
+                    closeSubs();
+                    document.getElementById("productsSubMenu").style.display = "inline";
+                    document["productsmenu_online"].src = "images/subOnline_rollover.png";
+                    break;
+                case "supplements":
+                    closeSubs();
+                    document.getElementById("productsSubMenu").style.display = "inline";
+                    document["productsmenu_supplements"].src = "images/subSupplements_rollover.png";
+                    break;
+                case "amsterdam":
+                    closeSubs();
+                    document.getElementById("contactSubMenu").style.display = "inline";
+                    document["contactmenu_amsterdam"].src = "images/subAmsterdam_rollover.png";
+                    break;
+                case "careers":
+                    closeSubs();
+                    document.getElementById("contactSubMenu").style.display = "inline";
+                    document["contactmenu_careers"].src = "images/subCareers_rollover.png";
+                    break;
+                case "daphne":
+                    closeSubs();
+                    document.getElementById("contactSubMenu").style.display = "inline";
+                    document["contactmenu_daphne"].src = "images/subDaphne_rollover.png";
+                    break;
+                case "seattle":
+                    closeSubs();
+                    document.getElementById("contactSubMenu").style.display = "inline";
+                    document["contactmenu_seattle"].src = "images/subSeattle_rollover.png";
+                    break;
+                case "support":
+                    closeSubs();
+                    document.getElementById("contactSubMenu").style.display = "inline";
+                    document["contactmenu_support"].src = "images/subSupport_rollover.png";
+                    break;
+            }
+        //}
+    }
+
+    function closeSubs() {
+        document.getElementById("aboutSubMenu").style.display = "none";
+        document.getElementById("productsSubMenu").style.display = "none";
+        document.getElementById("contactSubMenu").style.display = "none";
+        
+    }
+    
+    
+
+//-->
+</script>
+
+
+
+<script type="text/javascript">
+<!--
+
+    function JPEDivclassSwitch(divID, className) {
+            var myDiv = document.getElementById(divID);
+            myDiv.className = className;
+    }
+
+//-->
+</script>
+
+
+<script type="text/javascript">
+<!--
+
+    function JPEImageSwap(imageID, imageFile) {
+        var myImage = document.getElementById(imageID);
+        myImage.src = imageFile;
+    }
+
+
+//    document.getElementById('Mmenu1').onclick = blurThis();
+//    document.getElementById('Mmenu1').onfocus = blurThis();
+
+//    function blurThis() {
+//        this.blur();
+//    }
+    
+    
+    
+
+//    var links = document.getElementById("leftNavBarMainMenu").getElementsByTagName("a");
+//    for (var i = 0; i < links.length; i++) {
+//        links[i].onmousedown = function() {
+//            this.blur();
+//            return false;
+//        }
+//        links[i].onclick = function() {
+//            this.blur();
+//        }
+//        if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
+//            links[i].onfocus = function() {
+//                this.blur();
+//            }
+//        }
+//    }
+
+//-->
+</script>
+
+
+
+    <title></title>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+
+
+
+
+<body onload="return JPEmenuRoll('', '', '', '', '');">
+    <form id="form1" runat="server">
+    
+    
+	<asp:ScriptManager runat="server" id="sm1" EnablePartialRendering="True" AsyncPostBackTimeout="1200"  >
+  		
+  		<Services> 
+        <asp:ServiceReference Path="ecom_PartDetailModal.asmx"  /> 
+        <asp:ServiceReference Path="ecom_EditAccountModal.asmx"  /> 
+        <asp:ServiceReference Path="ecom_AJAXInterface.asmx"  /> 
+        </Services> 
+        </asp:ScriptManager>
+  <div>
+    
+    
+    
+    <div id="Header" class="WS_Header_div"><img  usemap="#headerMap" src="images/header_background_center.png" alt="" border="0" />
+    <map name="headerMap" id="headerMap">
+    <area shape="rect" alt="alt" coords="822,65,1034,116" href"default.aspx" title="JetPartsEngineering.com" onMouseOver="" onMouseOut="" onClick="" />
+    <area shape="rect" alt="Your PMA Solution" coords="66,89,241,117" href="images/about/about.aspx" title="About Jet Parts Engineering" onMouseOver="" onMouseOut="" onClick="" />
+     </map>
+    </div>
+    
+
+
+   
+   
+      <center>
+      <div id="leftNavBar" class="WS_LeftNavBar_Wrapper_div">
+      
+      
+      
+      
+        <div id="leftNavBarMainMenu" class="WS_LeftNavBar_MainMenu_div">
+        
+       <a href="default.aspx"  onmouseover="JPEmenuRoll('mmenu_home', 'images/menuHome_rollever.png', '', '', 'in');" onmouseout="JPEmenuRoll('mmenu_home', 'images/menuHome_active.png', 'home','', 'out');" onCli ><img src="images/menuHome_active.png" id="mmenu_home" name="mmenu_home" alt="Home Page" border="0" /></a><br />
+
+      <a href="about.aspx" onmouseover="JPEmenuRoll('mmenu_about', 'images/menuAbout_rollover.png', 'aboutSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_about', 'images/menuAbout_active.png', 'aboutSubMenu', 'none', 'out');"><img src="images/menuAbout_active.png" id="mmenu_about" name="mmenu_about" alt="About Jet Parts Engineering" border="0" /></a><br />
+      
+              <a href="products.aspx" onmouseover="JPEmenuRoll('mmenu_products', 'images/menuProducts_rollover.png', 'productsSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_products', 'images/menuProducts_active.png', 'productsSubMenu', 'none', 'out');"><img src="images/menuProducts_active.png" id="mmenu_products" name="mmenu_products" alt="JPE PMA Products" border="0" /></a><br />
+      
+              <a href="contact.aspx" onmouseover="JPEmenuRoll('mmenu_contact', 'images/menuContact_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_contact', 'images/menuContact_active.png', 'contactSubMenu', 'none', 'out');" style="this.border.style='';"><img src="images/menuContact_active.png" id="mmenu_contact" name="mmenu_contact" alt="Contact Jet Parts Engineering" border="0" /></a><br />
+     
+     </div>
+     
+     
+     
+        
+   
+     <div id="leftNavBarSubMenu" class="WS_LeftNavBar_SubMenu_div">
+     
+     
+     
+     <div id="aboutSubMenu" name="aboutSubMenu" class = "WS_SubMenu_About_Container_div" onmouseover="JPEmenuRoll('mmenu_about', 'images/menuAbout_rollover.png', 'aboutSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_about', 'images/menuAbout_active.png', 'aboutSubMenu', 'none', 'out');" >
+     
+     <a href="letter.aspx" onmouseover="JPEmenuRoll('aboutmenu_letter', 'images/subLetter_rollover.png', 'aboutSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('aboutmenu_letter', 'images/subLetter_active.png', 'aboutSubMenu', 'none', 'out');"><img src="images/subLetter_active.png" id="aboutmenu_letter" name="aboutmenu_letter" alt="Letter from the President" border="0"/></a><br />
+     
+      <a href="history.aspx" onmouseover="document.aboutmenu_history.src='images/subHistory_rollover.png';" onmouseout="document.aboutmenu_history.src='images/subHistory_active.png';"><img src="images/subHistory_active.png" id="aboutmenu_history" name="aboutmenu_history" alt="JPE History" border="0"/></a><br />
+      
+        <a href="philanthropy.aspx" onmouseover="JPEmenuRoll('aboutmenu_philanthropy', 'images/subPhilanthropy_rollover.png', 'aboutSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('aboutmenu_philanthropy', 'images/subPhilanthropy_active.png', 'aboutSubMenu', 'none', 'out');"><img src="images/subPhilanthropy_active.png" id="aboutmenu_philanthropy" name="aboutmenu_philanthropy" alt="Philanthropy at JPE" border="0"/></a><br />
+        
+        <a href="news.aspx" onmouseover="JPEmenuRoll('aboutmenu_news', 'images/subNews_rollover.png', 'aboutSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('aboutmenu_news', 'images/subNews_active.png', 'aboutSubMenu', 'none', 'out');"><img src="images/subNews_active.png" id="aboutmenu_news" name="aboutmenu_news" alt="JPE News" border="0"/></a><br />
+     </div>
+     
+     
+     <div id="productsSubMenu" name="productsSubMenu" class = "WS_SubMenu_Products_Container_div" onmouseover="JPEmenuRoll('mmenu_products', 'images/menuProducts_rollover.png', 'productsSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_products', 'images/menuProducts_active.png', 'productsSubMenu', 'none', 'out');" >
+     
+     <a href="online.aspx" onmouseover="JPEmenuRoll('productsmenu_online', 'images/subOnline_rollover.png', 'productsSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('productsmenu_online', 'images/subOnline_active.png', 'productsSubMenu', 'none', 'out');"><img src="images/subOnline_active.png" id="productsmenu_online" name="productsmenu_online" alt="JPESmartBuyer" border="0"/></a><br />
+ 
+      <a href="capabilities.aspx"  onmouseover="JPEmenuRoll('productsmenu_capabilities', 'images/subCapabilities_rollover.png', 'productsSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('productsmenu_capabilities', 'images/subCapabilities_active.png', 'productsSubMenu', 'none', 'out');"><img src="images/subCapabilities_active.png" id="productsmenu_capabilities" name="productsmenu_capabilities" alt="Capabilities" border="0"/></a><br />
+     
+          <a href="supplements.aspx"  onmouseover="JPEmenuRoll('productsmenu_supplements', 'images/subSupplements_rollover.png', 'productsSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('productsmenu_supplements', 'images/subSupplements_active.png', 'productsSubMenu', 'none', 'out');"><img src="images/subSupplements_active.png" id="productsmenu_supplements" name="productsmenu_supplements" alt="Supplements" border="0"/></a><br />
+    
+     </div>
+     
+     
+     
+     
+          <div id="contactSubMenu" name="contactSubMenu"  class = "WS_SubMenu_Contact_Container_div" onmouseover="JPEmenuRoll('mmenu_contact', 'images/menuContact_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('mmenu_contact', 'images/menuContact_active.png', 'contactSubMenu', 'none', 'out');" >
+     
+     <a href="seattle.aspx"  onmouseover="JPEmenuRoll('contactmenu_seattle', 'images/subSeattle_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('contactmenu_seattle', 'images/subSeattle_active.png', 'contactSubMenu', 'none', 'out');" ><img src="images/subSeattle_active.png" id="contactmenu_seattle" name="contactmenu_seattle" alt="Seattle" border="0"/></a><br />
+ 
+        <a href="daphne.aspx"  onmouseover="JPEmenuRoll('contactmenu_daphne', 'images/subDaphne_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('contactmenu_daphne', 'images/subDaphne_active.png', 'contactSubMenu', 'none', 'out');"><img src="images/subDaphne_active.png" id="contactmenu_daphne" name="contactmenu_daphne" alt="Daphne" border="0"/></a><br />
+ 
+
+       <a href="amsterdam.aspx"  onmouseover="JPEmenuRoll('contactmenu_amsterdam', 'images/subAmsterdam_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('contactmenu_amsterdam', 'images/subAmsterdam_active.png', 'contactSubMenu', 'none', 'out');" ><img src="images/subAmsterdam_active.png" id="contactmenu_amsterdam" name="contactmenu_amsterdam" alt="Amsterdam" border="0"/></a><br />
+       
+       <a href="careers.aspx"  onmouseover="JPEmenuRoll('contactmenu_careers', 'images/subCareers_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('contactmenu_careers', 'images/subCareers_active.png', 'contactSubMenu', 'none', 'out');"><img src="images/subCareers_active.png" id="contactmenu_careers" name="contactmenu_careers" alt="Careers" border="0"/></a><br />
+       
+              <a href="support.aspx" onmouseover="JPEmenuRoll('contactmenu_support', 'images/subSupport_rollover.png', 'contactSubMenu', 'inline', 'in');" onmouseout="JPEmenuRoll('contactmenu_support', 'images/subSupport_active.png', 'contactSubMenu', 'none', 'out');"><img src="images/subSupport_active.png" id="contactmenu_support" name="contactmenu_support" alt="Support" border="0"/></a><br />
+     
+     </div>
+     
+    
+      </div>
+      
+      
+     <div id="ViewPortDiv" class="WS_ViewPort_div" >
+    <asp:ContentPlaceHolder id="ViewPortContent" runat="server">
+        </asp:ContentPlaceHolder>
+        
+        
+         
+      <%--  <br /><br />
+        
+       Session Variables  <% =Page.Session["MMenu"] %> - <% =Page.Session["SMenu"] %>--%>
+       
+       <input type="hidden" name="Mmenu" id="Mmenu" value="<% =Page.Session["MMenu"] %>" />
+       <input type="hidden" name="Smenu" id="Smenu" value = "<% =Page.Session["SMenu"] %>" />
+       
+      </div>
+        
+      
+      </div>
+      
+     
+      </center>
+       
+     
+    </div>
+    </form>
+    
+      
+ 
+</body>
+</html>

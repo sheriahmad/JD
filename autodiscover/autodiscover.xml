@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<Autodiscover xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+<Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+<User>
+<DisplayName>Anthony De Francisco</DisplayName>
+<LegacyDN>/o=JETPARTS/ou=first administrative group/cn=Recipients/cn=adefrancisco</LegacyDN>
+<DeploymentId>16c6ee9e-399e-4f2d-b98e-eeeed3a298f1</DeploymentId>
+</User>
+<Account>
+<AccountType>email</AccountType>
+<Action>settings</Action>
+<Protocol>
+<Type>EXCH</Type>
+<Server>JETSERVE0.jetpartsengineering.local</Server>
+<ServerDN>/o=JETPARTS/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=JETSERVE0</ServerDN>
+<ServerVersion>7383807B</ServerVersion>
+<MdbDN>/o=JETPARTS/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Configuration/cn=Servers/cn=JETSERVE0/cn=Microsoft Private MDB</MdbDN>
+<ASUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</ASUrl>
+<OOFUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</OOFUrl>
+<OABUrl>https://remote.jetpartsengineering.com/OAB/6df14b79-151d-4e7d-817c-41633ae9212d/</OABUrl>
+<UMUrl>https://remote.jetpartsengineering.com/EWS/UM2007Legacy.asmx</UMUrl>
+<Port>0</Port>
+<DirectoryPort>0</DirectoryPort>
+<ReferralPort>0</ReferralPort>
+<PublicFolderServer>JETSERVE0.jetpartsengineering.local</PublicFolderServer>
+<AD>JETSERVE0.jetpartsengineering.local</AD>
+<EwsUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</EwsUrl>
+<EcpUrl>https://remote.jetpartsengineering.com/ecp/</EcpUrl>
+<EcpUrl-um>?p=customize/voicemail.aspx&amp;exsvurl=1</EcpUrl-um>
+<EcpUrl-aggr>?p=personalsettings/EmailSubscriptions.slab&amp;exsvurl=1</EcpUrl-aggr>
+<EcpUrl-mt>PersonalSettings/DeliveryReport.aspx?exsvurl=1&amp;IsOWA=&lt;IsOWA&gt;&amp;MsgID=&lt;MsgID&gt;&amp;Mbx=&lt;Mbx&gt;</EcpUrl-mt>
+<EcpUrl-ret>?p=organize/retentionpolicytags.slab&amp;exsvurl=1</EcpUrl-ret>
+<EcpUrl-sms>?p=sms/textmessaging.slab&amp;exsvurl=1</EcpUrl-sms>
+</Protocol>
+<Protocol>
+<Type>EXPR</Type>
+<Server>remote.jetpartsengineering.com</Server>
+<ASUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</ASUrl>
+<OOFUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</OOFUrl>
+<OABUrl>https://remote.jetpartsengineering.com/OAB/6df14b79-151d-4e7d-817c-41633ae9212d/</OABUrl>
+<UMUrl>https://remote.jetpartsengineering.com/EWS/UM2007Legacy.asmx</UMUrl>
+<Port>0</Port>
+<DirectoryPort>0</DirectoryPort>
+<ReferralPort>0</ReferralPort>
+<SSL>On</SSL>
+<AuthPackage>Basic</AuthPackage>
+<EwsUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</EwsUrl>
+<EcpUrl>https://remote.jetpartsengineering.com/ecp/</EcpUrl>
+<EcpUrl-um>?p=customize/voicemail.aspx&amp;exsvurl=1</EcpUrl-um>
+<EcpUrl-aggr>?p=personalsettings/EmailSubscriptions.slab&amp;exsvurl=1</EcpUrl-aggr>
+<EcpUrl-mt>PersonalSettings/DeliveryReport.aspx?exsvurl=1&amp;IsOWA=&lt;IsOWA&gt;&amp;MsgID=&lt;MsgID&gt;&amp;Mbx=&lt;Mbx&gt;</EcpUrl-mt>
+<EcpUrl-ret>?p=organize/retentionpolicytags.slab&amp;exsvurl=1</EcpUrl-ret>
+<EcpUrl-sms>?p=sms/textmessaging.slab&amp;exsvurl=1</EcpUrl-sms>
+</Protocol>
+<Protocol>
+<Type>WEB</Type>
+<Port>0</Port>
+<DirectoryPort>0</DirectoryPort>
+<ReferralPort>0</ReferralPort>
+<Internal>
+<OWAUrl AuthenticationMethod="Basic, Ntlm, Fba, WindowsIntegrated">https://remote.jetpartsengineering.com/owa/</OWAUrl>
+<Protocol>
+<Type>EXCH</Type>
+<ASUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</ASUrl>
+</Protocol>
+</Internal>
+<External>
+<OWAUrl AuthenticationMethod="Fba">https://remote.jetpartsengineering.com/owa/</OWAUrl>
+<Protocol>
+<Type>EXPR</Type>
+<ASUrl>https://remote.jetpartsengineering.com/EWS/Exchange.asmx</ASUrl>
+</Protocol>
+</External>
+</Protocol>
+</Account>
+</Response>
+</Autodiscover>

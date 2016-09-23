@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="0e42ef02-9ee6-454e-9f80-15a5d08fb57f" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://jetserve1.jetpartsengineering.com/dasp/service.svc?wsdl" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="MyWCFService.wsdl" MetadataType="Wsdl" ID="7d76ada6-1335-4194-be45-319f8c972ecb" SourceId="1" SourceUrl="http://jetserve1.jetpartsengineering.com/dasp/service.svc?wsdl" />
+    <MetadataFile FileName="Service3.xsd" MetadataType="Schema" ID="152834e8-137f-4655-9f77-86a6cde861ca" SourceId="1" SourceUrl="http://jetserve1.jetpartsengineering.local/dasp/Service.svc?xsd=xsd0" />
+    <MetadataFile FileName="Service32.xsd" MetadataType="Schema" ID="d3ab5781-d24a-4adb-9f7e-3023771982e7" SourceId="1" SourceUrl="http://jetserve1.jetpartsengineering.local/dasp/Service.svc?xsd=xsd2" />
+    <MetadataFile FileName="Service33.xsd" MetadataType="Schema" ID="995dce9c-8bd1-4fe0-a44f-b4a63bc66bda" SourceId="1" SourceUrl="http://jetserve1.jetpartsengineering.local/dasp/Service.svc?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

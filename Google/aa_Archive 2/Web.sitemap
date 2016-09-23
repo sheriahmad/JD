@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<siteMap xmlns="http://schemas.microsoft.com/AspNet/SiteMap-File-1.0" >
+  <siteMapNode url="default.aspx" title="home"  description="Home Page" image="images/menuHome_active.png" imageOver="images/menuHome_rollover.png">
+    <siteMapNode url="about.aspx" title="about"  description="About Jet Parts Engineering" image="images/menuAbout_active.png" imageOver="images/menuAbout_rollover.png">
+      <siteMapNode url="letter.aspx" title="letter"  description="Letter from the President"  image="images/menusubLetter_active.png" imageOver="images/menusubLetter_rollover.png"/>
+      <siteMapNode url="news.aspx" title="news"  description="News &amp; Events" image="images/menusubNewsEvents_active.png" imageOver="images/menusubNewsEvents_rollover.png"/>
+      <siteMapNode url="philanthropy.aspx" title="philanthropy"  description="Philanthropy at JPE" image="images/menusubPhilanthropy_active.png" imageOver="images/menusubPhilanthropy_rollover.png" />
+      <siteMapNode url="deltastar.aspx" title="recognition"  description="Recognition" image="images/menusubRecognition_active.png" imageOver="images/menusubRecognition_rollover.png" />
+    </siteMapNode>
+    <siteMapNode url="products.aspx" title="products"  description="JPE PMA Products" image="images/menuProducts_active.png" imageOver="images/menuProducts_rollover.png">
+      <siteMapNode url="online.aspx" title="online"  description="JPESmartBuyer"  image="images/menusubOnline_active.png" imageOver="images/menusubOnline_rollover.png"/>
+      <siteMapNode url="expertise.aspx" title="capabilities"  description="Expertise"  image="images/menusubExpertise_active.png" imageOver="images/menusubExpertise_rollover.png"/>
+      <siteMapNode url="supplements.aspx" title="supplements"  description="New FAA Approvals" image="images/menusubSupplements_active.png" imageOver="images/menusubSupplements_rollover.png" />
+    </siteMapNode>
+    <siteMapNode url="contact.aspx" title="contact"  description="Contact Jet Parts Engineering" image="images/menuContact_active.png" imageOver="images/menuContact_rollover.png">
+      <siteMapNode url="seattle.aspx" title="seattle"  description="Seattle" image="images/menusubSeattle_active.png" imageOver="images/menusubSeattle_rollover.png" />
+      <siteMapNode url="daphne.aspx" title="daphne"  description="Daphne" image="images/menusubDaphne_active.png" imageOver="images/menusubDaphne_rollover.png" />
+      <siteMapNode url="amsterdam.aspx" title="amsterdam"  description="Amsterdam" image="images/menusubAmsterdam_active.png" imageOver="images/menusubAmsterdam_rollover.png" />
+      <siteMapNode url="calverton.aspx" title="calverton"  description="Calverton" image="images/menusubCalverton_active.png" imageOver="images/menusubCalverton_rollover.png" />
+      <siteMapNode url="careers.aspx" title="careers"  description="Careers" image="images/menusubCareers_active.png" imageOver="images/menusubCareers_rollover.png" />
+      <siteMapNode url="support.aspx" title="support"  description="Support" image="images/menusubSupport_active.png" imageOver="images/menusubSupport_rollover.png" />
+    </siteMapNode>
+  </siteMapNode>
+</siteMap>
